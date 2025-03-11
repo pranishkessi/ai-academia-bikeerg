@@ -1,0 +1,49 @@
+name: Frontend CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Linter (ESLint)
+        run: |
+          npm install eslint
+          npx eslint src/
+
+      - name: Run Tests (Jest)
+        run: |
+          npm install jest
+          npm test
+
+  deploy:
+    needs: build-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Deploy Frontend (Docker)
+        run: |
+          echo "Deploying Frontend..."
+          docker build -t my-frontend ./frontend
+          docker run -d -p 3000:80 my-frontend
