@@ -38,7 +38,7 @@ export default function App() {
               <Text>🚴 Stroke Rate: <strong>{data.stroke_rate} spm</strong></Text>
               <Text>📏 Distance: <strong>{data.distance_meters} meters</strong></Text>
               <Text>⏳ Elapsed Time: <strong>{data.elapsed_time} sec</strong></Text>
-              <Text>❤️ Heart Rate: <strong>{data.heart_rate_bpm} bpm</strong></Text>
+              <Text>🔋 Energy: <strong>{data.energy_kwh} kWh</strong></Text>
             </>
           )}
 
