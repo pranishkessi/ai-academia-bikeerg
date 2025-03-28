@@ -10,16 +10,40 @@ import {
   useColorModeValue,
   HStack
 } from "@chakra-ui/react";
+import { Doughnut, Line } from "react-chartjs-2";
+import { 
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip, 
+  Legend, 
+  Title, 
+  LineElement,
+  PointElement, 
+  LinearScale,
+  CategoryScale 
+} from "chart.js";
+
+// Register all required chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title);
 
 function App() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [chartLabels, setChartLabels] = useState([]);
+  const [powerData, setPowerData] = useState([]);
+  const [strokeData, setStrokeData] = useState([]);
 
   const fetchData = async () => {
     try {
       const response = await axios.get("http://127.0.0.1:8080/data");
-      setData(response.data);
-      setLoading(false);
+      const newData = response.data;
+      setData(newData);
+      setLoading(false); // ✅ Mark loading as done
+
+      const timestamp = new Date().toLocaleTimeString();
+      setChartLabels((prev) => [...prev.slice(-20), timestamp]);
+      setPowerData((prev) => [...prev.slice(-20), newData.power_watts]);
+      setStrokeData((prev) => [...prev.slice(-20), newData.stroke_rate]);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -41,6 +65,77 @@ function App() {
 
   const cardBg = useColorModeValue("white", "gray.700");
 
+  // Energy Doughnut Chart
+  const energyGoal = 0.5;
+  const energyUsed = data?.energy_kwh ?? 0;
+
+  const energyChartData = {
+    labels: ["Energy Used", "Remaining"],
+    datasets: [
+      {
+        label: "Energy (kWh)",
+        data: [energyUsed, Math.max(energyGoal - energyUsed, 0)],
+        backgroundColor: ["#3182ce", "#e2e8f0"],
+        hoverOffset: 10,
+      },
+    ],
+  };
+
+  const energyChartOptions = {
+    cutout: "70%",
+    plugins: {
+      legend: {
+        display: true,
+        position: "bottom",
+      },
+    },
+  };
+
+  // Live Line Chart
+  const lineChartData = {
+    labels: chartLabels,
+    datasets: [
+      {
+        label: "Power (W)",
+        data: powerData,
+        borderColor: "rgba(49, 130, 206, 1)",
+        backgroundColor: "rgba(49, 130, 206, 0.2)",
+        tension: 0.4,
+      },
+      {
+        label: "Stroke Rate (spm)",
+        data: strokeData,
+        borderColor: "#ECC94B",
+        backgroundColor: "rgba(236, 201, 75, 0.2)",
+        tension: 0.4,
+      },
+    ],
+  };
+
+  const lineChartOptions = {
+    responsive: true,
+    animation: {
+      duration: 1000,
+      easing: "easeInOutQuart",
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
+    plugins: {
+      legend: {
+        position: "top",
+      },
+    },
+  };
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
+    const secs = (seconds % 60).toString().padStart(2, "0");
+    return `${mins}:${secs}`;
+  };
+  
+
   return (
     <Box
       bg="gray.100"
@@ -52,7 +147,7 @@ function App() {
     >
       <Box bg={cardBg} p={6} rounded="xl" shadow="lg" textAlign="center">
         <VStack spacing={4}>
-          <Heading size="md">🚴‍♂️ Concept2 BikeErg PM5 Data</Heading>
+          <Heading size="md">Concept2 BikeErg PM5 Data</Heading>
 
           {loading ? (
             <Spinner size="xl" />
@@ -61,8 +156,18 @@ function App() {
               <Text>⚡ <strong>Power:</strong> {data.power_watts} watts</Text>
               <Text>🚲 <strong>Stroke Rate:</strong> {data.stroke_rate} spm</Text>
               <Text>📏 <strong>Distance:</strong> {data.distance_meters} meters</Text>
-              <Text>⏳ <strong>Elapsed Time:</strong> {data.elapsed_time} sec</Text>
+              <Text>⏳ <strong>Elapsed Time:</strong> {formatTime(data.elapsed_time)} min</Text>
               <Text>🔋 <strong>Energy:</strong> {data.energy_kwh} kWh</Text>
+
+              <Box boxSize="200px" mt={4}>
+                <Doughnut data={energyChartData} options={energyChartOptions} />
+              </Box>
+
+              <Box mt={6} width="100%">
+                <Heading size="sm" mb={2}>📈 Live Metrics</Heading>
+                <Line data={lineChartData} options={lineChartOptions} />
+              </Box>
+
               <Text>📡 <strong>Status:</strong> {data.session_active ? "Active" : "Paused"}</Text>
             </>
           )}
