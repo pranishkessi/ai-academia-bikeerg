@@ -137,52 +137,69 @@ function App() {
   
 
   return (
-    <Box
-      bg="gray.100"
-      minH="100vh"
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      p={4}
-    >
-      <Box bg={cardBg} p={6} rounded="xl" shadow="lg" textAlign="center">
-        <VStack spacing={4}>
-          <Heading size="md">Concept2 BikeErg PM5 Data</Heading>
+<Box
+  bg="gray.100"
+  minH="100vh"
+  p={6}
+  display="flex"
+  justifyContent="center"
+  alignItems="center"
+>
+  <Box
+    bg={cardBg}
+    width="100%"
+    maxW="1400px"
+    height="95vh"
+    rounded="2xl"
+    shadow="2xl"
+    p={6}
+    display="grid"
+    gridTemplateColumns="1fr 1fr 2fr"
+    gap={6}
+    alignItems="start"
+  >
+    {/* Left Column - Metrics & Buttons */}
+    <VStack align="start" spacing={4}>
+      <Heading size="md"> Metrics</Heading>
+      {data && (
+        <>
+          <Text fontSize="md"> <strong>Power:</strong> {data.power_watts} watts</Text>
+          <Text fontSize="md"> <strong>Stroke:</strong> {data.stroke_rate} spm</Text>
+          <Text fontSize="md"> <strong>Distance:</strong> {data.distance_meters} m</Text>
+          <Text fontSize="md"> <strong>Time:</strong> {formatTime(data.elapsed_time)}</Text>
+          <Text fontSize="md"> <strong>Energy:</strong> {data.energy_kwh} kWh</Text>
+          <Text fontSize="md"> <strong>Status:</strong> {data.session_active ? "Active" : "Paused"}</Text>
+        </>
+      )}
+      <HStack mt={4}>
+        <Button colorScheme="green" onClick={startSession}>
+          Start
+        </Button>
+        <Button colorScheme="red" onClick={stopSession}>
+          Stop
+        </Button>
+      </HStack>
+    </VStack>
 
-          {loading ? (
-            <Spinner size="xl" />
-          ) : (
-            <>
-              <Text>⚡ <strong>Power:</strong> {data.power_watts} watts</Text>
-              <Text>🚲 <strong>Stroke Rate:</strong> {data.stroke_rate} spm</Text>
-              <Text>📏 <strong>Distance:</strong> {data.distance_meters} meters</Text>
-              <Text>⏳ <strong>Elapsed Time:</strong> {formatTime(data.elapsed_time)} min</Text>
-              <Text>🔋 <strong>Energy:</strong> {data.energy_kwh} kWh</Text>
-
-              <Box boxSize="200px" mt={4}>
-                <Doughnut data={energyChartData} options={energyChartOptions} />
-              </Box>
-
-              <Box mt={6} width="100%">
-                <Heading size="sm" mb={2}>📈 Live Metrics</Heading>
-                <Line data={lineChartData} options={lineChartOptions} />
-              </Box>
-
-              <Text>📡 <strong>Status:</strong> {data.session_active ? "Active" : "Paused"}</Text>
-            </>
-          )}
-
-          <HStack>
-            <Button colorScheme="green" onClick={startSession}>
-              Start Session
-            </Button>
-            <Button colorScheme="red" onClick={stopSession}>
-              Stop Session
-            </Button>
-          </HStack>
-        </VStack>
+    {/* Center Column - Doughnut */}
+    <VStack spacing={4} justify="center" align="center">
+      <Heading size="sm"> Energy Used</Heading>
+      <Box boxSize="250px">
+        <Doughnut data={energyChartData} options={energyChartOptions} />
       </Box>
-    </Box>
+    </VStack>
+
+    {/* Right Column - Line Chart */}
+    <VStack spacing={4} align="center">
+      <Heading size="sm"> Live Power & Stroke</Heading>
+      <Box width="100%" height="100%">
+        <Line data={lineChartData} options={lineChartOptions} />
+      </Box>
+    </VStack>
+  </Box>
+</Box>
+
+
   );
 }
 
