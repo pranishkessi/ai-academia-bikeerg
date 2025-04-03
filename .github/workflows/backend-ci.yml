@@ -44,6 +44,9 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+  
       - name: Deploy Backend (Docker)
         run: |
           echo "Deploying Backend..."
