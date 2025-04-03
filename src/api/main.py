@@ -67,8 +67,6 @@ def simulate_session():
 
 @app.get("/")
 def read_root():
-
-
     return {"message": "Welcome to the Concept2 BikeErg API"}
 
 
@@ -81,6 +79,7 @@ def get_data():
 def start_session():
     reset_session()
     return {"message": "Session started."}
+
 
 @app.post("/stop")
 def stop_session():
