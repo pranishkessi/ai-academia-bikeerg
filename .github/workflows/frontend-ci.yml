@@ -47,9 +47,8 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: Deploy Frontend (Docker)
-      working-directory: frontend
+    - name: Deploy Fullstack App (Docker)
       run: |
-        echo "Deploying Frontend..."
-        docker build -t my-frontend .
-        docker run -d -p 3000:80 my-frontend
+        echo "Deploying Fullstack App..."
+        docker build -t ai-academia-app .  # root is context
+        docker run -d -p 3000:3000 -p 8080:8080 ai-academia-app
