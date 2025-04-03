@@ -25,16 +25,19 @@ jobs:
 
       - name: Install Dependencies
         run: npm install
+        working-directory: frontend
 
       - name: Run Linter (ESLint)
         run: |
           npm install eslint
           npx eslint src/
+          working-directory: frontend
 
       - name: Run Tests (Jest)
         run: |
           npm install jest
           npm test
+          working-directory: frontend
 
   deploy:
     needs: build-test
