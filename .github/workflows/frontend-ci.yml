@@ -44,8 +44,12 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
-      - name: Deploy Frontend (Docker)
-        run: |
-          echo "Deploying Frontend..."
-          docker build -t my-frontend ./frontend
-          docker run -d -p 3000:80 my-frontend
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Deploy Frontend (Docker)
+      working-directory: frontend
+      run: |
+        echo "Deploying Frontend..."
+        docker build -t my-frontend .
+        docker run -d -p 3000:80 my-frontend
