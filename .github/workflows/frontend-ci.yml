@@ -14,6 +14,10 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: frontend  # ✅ Applies to all `run:` steps in this job
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -25,19 +29,14 @@ jobs:
 
       - name: Install Dependencies
         run: npm install
-        working-directory: frontend
 
       - name: Run Linter (ESLint)
-        run: |
-          npm install eslint
-          npx eslint src/
-          working-directory: frontend
+        run: npx eslint . --config eslint.config.js
 
       - name: Run Tests (Jest)
         run: |
           npm install jest
           npm test
-          working-directory: frontend
 
   deploy:
     needs: build-test

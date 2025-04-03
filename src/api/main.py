@@ -24,6 +24,7 @@ state = {
     "session_active": False
 }
 
+
 def reset_session():
     state.update({
         "power": random.randint(100, 150),
@@ -34,6 +35,7 @@ def reset_session():
         "energy_kwh": 0.0,
         "session_active": True
     })
+
 
 def simulate_session():
     now = time.time()
@@ -62,13 +64,18 @@ def simulate_session():
         "session_active": state["session_active"]
     }
 
+
 @app.get("/")
 def read_root():
+
+
     return {"message": "Welcome to the Concept2 BikeErg API"}
+
 
 @app.get("/data")
 def get_data():
     return simulate_session()
+
 
 @app.post("/start")
 def start_session():
