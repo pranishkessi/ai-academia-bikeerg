@@ -28,7 +28,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointE
 
 function App() {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [chartLabels, setChartLabels] = useState([]);
   const [powerData, setPowerData] = useState([]);
   const [strokeData, setStrokeData] = useState([]);
