@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import TaskUnlockList from "./components/TaskUnlockList";
 import {
   Box,
   Button,
@@ -195,6 +196,7 @@ function App() {
       <Box width="100%" height="100%">
         <Line data={lineChartData} options={lineChartOptions} />
       </Box>
+      {data && <TaskUnlockList energy={data.energy_kwh} />}
     </VStack>
   </Box>
 </Box>
