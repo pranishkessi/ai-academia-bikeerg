@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Text,
@@ -6,31 +6,48 @@ import {
   Heading,
   HStack,
   Icon,
+  Tooltip,
   ScaleFade,
 } from "@chakra-ui/react";
 import { FaLock, FaUnlock } from "react-icons/fa";
 
+// Define the energy thresholds and descriptions
 const tasks = [
   {
     label: "🔍 Simple Google search query",
     threshold: 0.002,
+    description: "You can now power a Google search query using the generated energy!",
   },
   {
     label: "🧠 Local image or sound recognition",
-    threshold: 0.007,
+    threshold: 0.004,
+    description: "Your energy is enough to power local AI for object or sound recognition!",
   },
   {
     label: "📝 Speech-to-text transcription",
-    threshold: 0.009,
+    threshold: 0.006,
+    description: "You can now convert speech into text using AI-powered transcription!",
   },
   {
     label: "🤖 LLM inference (ChatGPT response)",
-    threshold: 0.02,
+    threshold: 0.008,
+    description: "Your energy can now power an entire language model like ChatGPT!",
   },
 ];
 
 function TaskUnlockList({ energy }) {
-  const energyValue = parseFloat(energy); // Ensure it's numeric
+  const energyValue = parseFloat(energy) || 0;
+
+  const [activeTooltipIndex, setActiveTooltipIndex] = useState(null);
+
+  useEffect(() => {
+    const newlyUnlocked = tasks.findIndex(
+      (task, i) =>
+        energyValue >= task.threshold &&
+        (i === tasks.length - 1 || energyValue < tasks[i + 1].threshold)
+    );
+    setActiveTooltipIndex(newlyUnlocked >= 0 ? newlyUnlocked : null);
+  }, [energyValue]);
 
   return (
     <Box
@@ -47,33 +64,42 @@ function TaskUnlockList({ energy }) {
       <VStack align="start" spacing={3}>
         {tasks.map((task, idx) => {
           const unlocked = energyValue >= task.threshold;
+          const showTooltip = idx === activeTooltipIndex;
 
           return (
-            <ScaleFade key={idx} initialScale={0.9} in={true}>
-              <HStack
-                spacing={3}
-                w="100%"
-                justify="space-between"
-                p={2}
-                borderRadius="md"
-                bg={unlocked ? "green.50" : "gray.100"}
-                border="1px solid"
-                borderColor={unlocked ? "green.300" : "gray.300"}
+            <ScaleFade in={true} key={idx}>
+              <Tooltip
+                hasArrow
+                placement="right"
+                label={showTooltip ? task.description : ""}
+                isOpen={showTooltip}
+                shouldWrapChildren
               >
-                <HStack>
+                <HStack
+                  spacing={3}
+                  p={3}
+                  borderRadius="md"
+                  width="100%"
+                  bg={unlocked ? "green.50" : "gray.100"}
+                  borderWidth={unlocked ? "1px" : "0px"}
+                  borderColor={unlocked ? "green.400" : "gray.200"}
+                >
                   <Icon
                     as={unlocked ? FaUnlock : FaLock}
                     color={unlocked ? "green.500" : "gray.400"}
                   />
-                  <Text>{task.label}</Text>
+                  <Text fontWeight="medium" color={unlocked ? "green.700" : "gray.600"}>
+                    {task.label}
+                  </Text>
+                  <Text
+                    ml="auto"
+                    fontWeight="bold"
+                    color={unlocked ? "green.500" : "gray.500"}
+                  >
+                    {unlocked ? "UNLOCKED" : "LOCKED"}
+                  </Text>
                 </HStack>
-                <Text
-                  fontWeight="bold"
-                  color={unlocked ? "green.500" : "gray.500"}
-                >
-                  {unlocked ? "UNLOCKED" : "LOCKED"}
-                </Text>
-              </HStack>
+              </Tooltip>
             </ScaleFade>
           );
         })}
