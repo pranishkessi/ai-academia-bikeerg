@@ -14,22 +14,22 @@ import { FaLock, FaUnlock } from "react-icons/fa";
 // Define the energy thresholds and descriptions
 const tasks = [
   {
-    label: "🔍 Simple Google search query",
+    label: "Simple Google search query",
     threshold: 0.002,
     description: "You can now power a Google search query using the generated energy!",
   },
   {
-    label: "🧠 Local image or sound recognition",
+    label: "Local image or sound recognition",
     threshold: 0.004,
     description: "Your energy is enough to power local AI for object or sound recognition!",
   },
   {
-    label: "📝 Speech-to-text transcription",
+    label: "Speech-to-text transcription",
     threshold: 0.006,
     description: "You can now convert speech into text using AI-powered transcription!",
   },
   {
-    label: "🤖 LLM inference (ChatGPT response)",
+    label: "LLM inference (ChatGPT response)",
     threshold: 0.008,
     description: "Your energy can now power an entire language model like ChatGPT!",
   },
@@ -59,7 +59,7 @@ function TaskUnlockList({ energy }) {
       width="100%"
     >
       <Heading size="sm" mb={3}>
-        🔓 AI Tasks Unlocked
+        AI Tasks Unlocked
       </Heading>
       <VStack align="start" spacing={3}>
         {tasks.map((task, idx) => {
