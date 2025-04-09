@@ -1,208 +1,139 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import TaskUnlockList from "./components/TaskUnlockList";
+import { useToast } from "@chakra-ui/react";
 import {
   Box,
-  Button,
-  Text,
+  ChakraProvider,
   VStack,
-  Heading,
+  Text,
   Spinner,
-  useColorModeValue,
-  HStack
 } from "@chakra-ui/react";
-import { Doughnut, Line } from "react-chartjs-2";
-import { 
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip, 
-  Legend, 
-  Title, 
-  LineElement,
-  PointElement, 
-  LinearScale,
-  CategoryScale 
-} from "chart.js";
-
-// Register all required chart.js components
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title);
+import DashboardLayout from "./components/DashboardLayout";
+import TaskUnlockList from "./components/TaskUnlockList";
 
 function App() {
+  const [isRunning, setIsRunning] = useState(false);
   const [data, setData] = useState(null);
-  const [, setLoading] = useState(true);
-  const [chartLabels, setChartLabels] = useState([]);
-  const [powerData, setPowerData] = useState([]);
-  const [strokeData, setStrokeData] = useState([]);
+  const [status, setStatus] = useState("Inactive");
+  const toast = useToast();
+  const [sessionEnded, setSessionEnded] = useState(false);
 
+
+  // Fetch data from backend API
   const fetchData = async () => {
     try {
       const response = await axios.get("http://127.0.0.1:8080/data");
-      const newData = response.data;
-      setData(newData);
-      setLoading(false); // ✅ Mark loading as done
+      setData(response.data);
 
-      const timestamp = new Date().toLocaleTimeString();
-      setChartLabels((prev) => [...prev.slice(-20), timestamp]);
-      setPowerData((prev) => [...prev.slice(-20), newData.power_watts]);
-      setStrokeData((prev) => [...prev.slice(-20), newData.stroke_rate]);
+      // Automatically update status from backend
+      if (response.data.session_active) {
+        setStatus("Active");
+      } else {
+        setStatus("Inactive");
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
 
-  const startSession = async () => {
-    await axios.post("http://127.0.0.1:8080/start");
-  };
-
-  const stopSession = async () => {
-    await axios.post("http://127.0.0.1:8080/stop");
-  };
-
+  // Always poll the backend every second
   useEffect(() => {
-    fetchData();
+    fetchData(); // initial fetch
     const interval = setInterval(fetchData, 1000);
     return () => clearInterval(interval);
   }, []);
 
-  const cardBg = useColorModeValue("white", "gray.700");
-
-  // Energy Doughnut Chart
-  const energyGoal = 0.5;
-  const energyUsed = data?.energy_kwh ?? 0;
-
-  const energyChartData = {
-    labels: ["Energy Used", "Remaining"],
-    datasets: [
-      {
-        label: "Energy (kWh)",
-        data: [energyUsed, Math.max(energyGoal - energyUsed, 0)],
-        backgroundColor: ["#3182ce", "#e2e8f0"],
-        hoverOffset: 10,
-      },
-    ],
-  };
-
-  const energyChartOptions = {
-    cutout: "70%",
-    plugins: {
-      legend: {
-        display: true,
-        position: "bottom",
-      },
-    },
-  };
-
-  // Live Line Chart
-  const lineChartData = {
-    labels: chartLabels,
-    datasets: [
-      {
-        label: "Power (W)",
-        data: powerData,
-        borderColor: "rgba(49, 130, 206, 1)",
-        backgroundColor: "rgba(49, 130, 206, 0.2)",
-        tension: 0.4,
-      },
-      {
-        label: "Stroke Rate (spm)",
-        data: strokeData,
-        borderColor: "#ECC94B",
-        backgroundColor: "rgba(236, 201, 75, 0.2)",
-        tension: 0.4,
-      },
-    ],
-  };
-
-  const lineChartOptions = {
-    responsive: true,
-    animation: {
-      duration: 1000,
-      easing: "easeInOutQuart",
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-      },
-    },
-    plugins: {
-      legend: {
-        position: "top",
-      },
-    },
-  };
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
-    const secs = (seconds % 60).toString().padStart(2, "0");
-    return `${mins}:${secs}`;
+  const handleStart = async () => {
+    if (isRunning) {
+      toast({
+        title: "Session already running.",
+        description: "You must stop the current session before starting a new one.",
+        status: "info",
+        duration: 4000,
+        isClosable: true,
+      });
+      return;
+    }
+    try {
+      await axios.post("http://127.0.0.1:8080/start");
+      setStatus("Active");
+      setIsRunning(true);
+      setSessionEnded(false);
+    } catch (error) {
+      console.error("Error starting session:", error);
+    }
   };
   
 
+  const handleStop = async () => {
+    try {
+      await axios.post("http://127.0.0.1:8080/stop");
+      setStatus("Inactive");
+      setIsRunning(false);
+      setSessionEnded(true); // show summary
+    } catch (error) {
+      console.error("Error stopping session:", error);
+    }
+  };
+
+  // Show loading spinner until backend returns active session
+  if (!data) {
+    return (
+      <ChakraProvider>
+        <Box p={8} textAlign="center">
+          <Text mb={4}>Loading session data...</Text>
+          <Spinner size="xl" />
+        </Box>
+      </ChakraProvider>
+    );
+  }
+  
+
   return (
-<Box
-  bg="gray.100"
-  minH="100vh"
-  p={6}
-  display="flex"
-  justifyContent="center"
-  alignItems="center"
->
-  <Box
-    bg={cardBg}
-    width="100%"
-    maxW="1400px"
-    height="95vh"
-    rounded="2xl"
-    shadow="2xl"
-    p={6}
-    display="grid"
-    gridTemplateColumns="1fr 1fr 2fr"
-    gap={6}
-    alignItems="start"
-  >
-    {/* Left Column - Metrics & Buttons */}
-    <VStack align="start" spacing={4}>
-      <Heading size="md"> Metrics</Heading>
-      {data && (
-        <>
-          <Text fontSize="md"> <strong>Power:</strong> {data.power_watts} watts</Text>
-          <Text fontSize="md"> <strong>Stroke:</strong> {data.stroke_rate} spm</Text>
-          <Text fontSize="md"> <strong>Distance:</strong> {data.distance_meters} m</Text>
-          <Text fontSize="md"> <strong>Time:</strong> {formatTime(data.elapsed_time)}</Text>
-          <Text fontSize="md"> <strong>Energy:</strong> {data.energy_kwh} kWh</Text>
-          <Text fontSize="md"> <strong>Status:</strong> {data.session_active ? "Active" : "Paused"}</Text>
-        </>
-      )}
-      <HStack mt={4}>
-        <Button colorScheme="green" onClick={startSession}>
-          Start
-        </Button>
-        <Button colorScheme="red" onClick={stopSession}>
-          Stop
-        </Button>
-      </HStack>
-    </VStack>
+    <ChakraProvider>
+      <VStack p={4} spacing={6} align="stretch">
+        <DashboardLayout
+          metrics={{
+            power: data.power_watts,
+            stroke: data.stroke_rate,
+            distance: data.distance_meters,
+            time: formatTime(data.elapsed_time),
+            energy: data.energy_kwh,
+            status: status,
+          }}
+          onStart={handleStart}
+          onStop={handleStop}
+        />
 
-    {/* Center Column - Doughnut */}
-    <VStack spacing={4} justify="center" align="center">
-      <Heading size="sm"> Energy Used</Heading>
-      <Box boxSize="250px">
-        <Doughnut data={energyChartData} options={energyChartOptions} />
-      </Box>
-    </VStack>
-
-    {/* Right Column - Line Chart */}
-    <VStack spacing={4} align="center">
-      <Heading size="sm"> Live Power & Stroke</Heading>
-      <Box width="100%" height="100%">
-        <Line data={lineChartData} options={lineChartOptions} />
-      </Box>
-      {data && <TaskUnlockList energy={data.energy_kwh} />}
-    </VStack>
+        <Box>
+          <TaskUnlockList energy={data.energy_kwh} />
+        </Box>
+        {sessionEnded && (
+  <Box p={4} mt={6} bg="blue.50" borderRadius="md" boxShadow="md">
+    <Text fontSize="lg" fontWeight="bold" mb={2}>
+    Session Summary
+    </Text>
+    <Text>Elapsed Time: {formatTime(data.elapsed_time)}</Text>
+    <Text>Distance: {data.distance_meters} meters</Text>
+    <Text>Energy: {data.energy_kwh} kWh</Text>
+    <Text>Tasks Unlocked: {
+      // Count how many tasks were unlocked
+      ["0.002", "0.004", "0.006", "0.008"].filter(t => data.energy_kwh >= parseFloat(t)).length
+    } / 4
+    </Text>
   </Box>
-</Box>
+)}
 
-
+      </VStack>
+    </ChakraProvider>
   );
+}
+
+// Helper to format seconds into MM:SS
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
+  const secs = (seconds % 60).toString().padStart(2, "0");
+  return `${mins}:${secs}`;
 }
 
 export default App;
