@@ -8,6 +8,7 @@ import {
   VStack,
   Heading,
 } from "@chakra-ui/react";
+import SpeedometerChart from "./SpeedometerChart"; // Import the speedometer chart
 
 function DashboardLayout({ metrics, onStart, onStop, isStartDisabled }) {
   return (
@@ -62,13 +63,10 @@ function DashboardLayout({ metrics, onStart, onStop, isStartDisabled }) {
             borderRadius="md"
             p={4}
             textAlign="center"
+            bg="white"
           >
-            {/* Speedometer Chart Placeholder */}
-            <img
-              src="/speedometer-placeholder.png"
-              alt="Speedometer"
-              style={{ margin: "auto", width: "60%" }}
-            />
+            <Text fontWeight="bold" mb={2}>Energy Speedometer</Text>
+            <SpeedometerChart energy={metrics.energy} />
           </Box>
         </GridItem>
 
@@ -79,14 +77,10 @@ function DashboardLayout({ metrics, onStart, onStop, isStartDisabled }) {
             borderRadius="md"
             p={4}
             textAlign="center"
+            bg="white"
           >
-            {/* Line Chart Placeholder */}
-            <Text>Live Power & Stroke</Text>
-            <img
-              src="/line-chart-placeholder.png"
-              alt="Line Chart"
-              style={{ margin: "auto", width: "95%" }}
-            />
+            <Text fontWeight="bold" mb={2}>📈 Live Power & Stroke</Text>
+            {/* Line Chart will render here */}
           </Box>
         </GridItem>
 

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useToast } from "@chakra-ui/react";
 import {
   Box,
   ChakraProvider,
   VStack,
   Text,
   Spinner,
+  useToast,
+  ScaleFade,
 } from "@chakra-ui/react";
 import DashboardLayout from "./components/DashboardLayout";
 import TaskUnlockList from "./components/TaskUnlockList";
@@ -109,19 +110,49 @@ function App() {
           <TaskUnlockList energy={data.energy_kwh} />
         </Box>
         {sessionEnded && (
-  <Box p={4} mt={6} bg="blue.50" borderRadius="md" boxShadow="md">
-    <Text fontSize="lg" fontWeight="bold" mb={2}>
-    Session Summary
-    </Text>
-    <Text>Elapsed Time: {formatTime(data.elapsed_time)}</Text>
-    <Text>Distance: {data.distance_meters} meters</Text>
-    <Text>Energy: {data.energy_kwh} kWh</Text>
-    <Text>Tasks Unlocked: {
-      // Count how many tasks were unlocked
-      ["0.002", "0.004", "0.006", "0.008"].filter(t => data.energy_kwh >= parseFloat(t)).length
-    } / 4
-    </Text>
-  </Box>
+  <ScaleFade initialScale={0.9} in={sessionEnded}>
+    <Box
+      mt={8}
+      bg="white"
+      borderRadius="lg"
+      boxShadow="xl"
+      p={6}
+      maxW="500px"
+      mx="auto"
+      border="2px solid #CBD5E0"
+      position="relative"
+    >
+      <Text fontSize="xl" fontWeight="bold" mb={4} color="blue.700">
+      Session Summary
+      </Text>
+
+      {/* Close Button */}
+      <Box position="absolute" top="10px" right="10px">
+        <button
+          onClick={() => setSessionEnded(false)}
+          style={{
+            background: "transparent",
+            border: "none",
+            fontSize: "20px",
+            cursor: "pointer",
+            color: "#999",
+          }}
+          aria-label="Close Summary"
+        >
+          ✖
+        </button>
+      </Box>
+
+      <VStack align="start" spacing={2}>
+        <Text><strong>Elapsed Time:</strong> {formatTime(data.elapsed_time)}</Text>
+        <Text><strong>Distance:</strong> {data.distance_meters} meters</Text>
+        <Text><strong>Energy:</strong> {data.energy_kwh} kWh</Text>
+        <Text><strong>Tasks Unlocked:</strong> {
+          ["0.002", "0.004", "0.006", "0.008"].filter(t => data.energy_kwh >= parseFloat(t)).length
+        } / 4</Text>
+      </VStack>
+    </Box>
+  </ScaleFade>
 )}
 
       </VStack>
