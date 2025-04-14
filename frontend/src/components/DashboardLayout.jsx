@@ -65,7 +65,6 @@ function DashboardLayout({ metrics, onStart, onStop, isStartDisabled }) {
             textAlign="center"
             bg="white"
           >
-            <Text fontWeight="bold" mb={2}>Energy Speedometer</Text>
             <SpeedometerChart energy={metrics.energy} />
           </Box>
         </GridItem>
