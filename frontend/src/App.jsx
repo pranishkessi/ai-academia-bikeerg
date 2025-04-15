@@ -1,3 +1,4 @@
+// App.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
@@ -10,7 +11,6 @@ import {
   ScaleFade,
 } from "@chakra-ui/react";
 import DashboardLayout from "./components/DashboardLayout";
-import TaskUnlockList from "./components/TaskUnlockList";
 
 function App() {
   const [isRunning, setIsRunning] = useState(false);
@@ -19,27 +19,18 @@ function App() {
   const toast = useToast();
   const [sessionEnded, setSessionEnded] = useState(false);
 
-
-  // Fetch data from backend API
-  const fetchData = async () => {
-    try {
-      const response = await axios.get("http://127.0.0.1:8080/data");
-      setData(response.data);
-
-      // Automatically update status from backend
-      if (response.data.session_active) {
-        setStatus("Active");
-      } else {
-        setStatus("Inactive");
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-
-  // Always poll the backend every second
   useEffect(() => {
-    fetchData(); // initial fetch
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("http://127.0.0.1:8080/data");
+        setData(response.data);
+        setStatus(response.data.session_active ? "Active" : "Inactive");
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
     const interval = setInterval(fetchData, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -64,20 +55,18 @@ function App() {
       console.error("Error starting session:", error);
     }
   };
-  
 
   const handleStop = async () => {
     try {
       await axios.post("http://127.0.0.1:8080/stop");
       setStatus("Inactive");
       setIsRunning(false);
-      setSessionEnded(true); // show summary
+      setSessionEnded(true);
     } catch (error) {
       console.error("Error stopping session:", error);
     }
   };
 
-  // Show loading spinner until backend returns active session
   if (!data) {
     return (
       <ChakraProvider>
@@ -88,7 +77,6 @@ function App() {
       </ChakraProvider>
     );
   }
-  
 
   return (
     <ChakraProvider>
@@ -104,26 +92,27 @@ function App() {
           }}
           onStart={handleStart}
           onStop={handleStop}
+          energy={data.energy_kwh}
         />
 
-        <Box>
-          <TaskUnlockList energy={data.energy_kwh} />
-        </Box>
-        {sessionEnded && (
+{sessionEnded && (
   <ScaleFade initialScale={0.9} in={sessionEnded}>
     <Box
-      mt={8}
+      position="fixed"
+      top="50%"
+      left="50%"
+      transform="translate(-50%, -50%)"
       bg="white"
       borderRadius="lg"
-      boxShadow="xl"
+      boxShadow="2xl"
       p={6}
       maxW="500px"
-      mx="auto"
+      width="90%"
       border="2px solid #CBD5E0"
-      position="relative"
+      zIndex={1000}
     >
       <Text fontSize="xl" fontWeight="bold" mb={4} color="blue.700">
-      Session Summary
+        Session Summary
       </Text>
 
       {/* Close Button */}
@@ -160,7 +149,6 @@ function App() {
   );
 }
 
-// Helper to format seconds into MM:SS
 function formatTime(seconds) {
   const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
   const secs = (seconds % 60).toString().padStart(2, "0");

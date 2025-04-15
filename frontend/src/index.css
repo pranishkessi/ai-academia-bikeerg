@@ -1,8 +1,12 @@
-body {
+body, #root {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
     font-family: Arial, sans-serif;
     background-color: #f9f9f9;
     margin: 0;
     padding: 0;
+
   }
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }

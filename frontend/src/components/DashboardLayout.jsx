@@ -1,3 +1,4 @@
+// DashboardLayout.jsx
 import React from "react";
 import {
   Box,
@@ -8,9 +9,10 @@ import {
   VStack,
   Heading,
 } from "@chakra-ui/react";
-import SpeedometerChart from "./SpeedometerChart"; // Import the speedometer chart
+import SpeedometerChart from "./SpeedometerChart";
+import TaskUnlockList from "./TaskUnlockList";
 
-function DashboardLayout({ metrics, onStart, onStop, isStartDisabled }) {
+function DashboardLayout({ metrics, onStart, onStop, isStartDisabled, energy }) {
   return (
     <Box border="2px solid gray" borderRadius="md" p={4}>
       <Grid
@@ -56,44 +58,42 @@ function DashboardLayout({ metrics, onStart, onStop, isStartDisabled }) {
         )}
 
         {/* Row 2 - Speedometer + Line Chart */}
-        <GridItem colSpan={3} rowSpan={1}>
+        <GridItem colSpan={3}>
           <Box
             height="100%"
             border="1px solid gray"
             borderRadius="md"
             p={4}
-            textAlign="center"
             bg="white"
+            minHeight="250px"
           >
             <SpeedometerChart energy={metrics.energy} />
           </Box>
         </GridItem>
 
-        <GridItem colSpan={4} rowSpan={1}>
+        <GridItem colSpan={4}>
           <Box
             height="100%"
             border="1px solid gray"
             borderRadius="md"
             p={4}
-            textAlign="center"
             bg="white"
+            minHeight="250px"
           >
             <Text fontWeight="bold" mb={2}>📈 Live Power & Stroke</Text>
-            {/* Line Chart will render here */}
           </Box>
         </GridItem>
 
-        {/* Row 3 - AI Task + Info Box */}
+        {/* Row 3 - AI Task + Reserved */}
         <GridItem colSpan={3}>
           <Box border="1px solid gray" borderRadius="md" p={4}>
-            {/* AI Task Unlocking Sequence will render here */}
-            {/* Handled from App.jsx via <TaskUnlockList /> */}
+            <TaskUnlockList energy={energy} />
           </Box>
         </GridItem>
 
         <GridItem colSpan={4}>
           <Box border="1px solid gray" borderRadius="md" p={4}>
-            {/* Reserved for future: Tooltip / AI info / Confetti */}
+            {/* Future: Confetti, InfoBox, Tooltips */}
           </Box>
         </GridItem>
       </Grid>
