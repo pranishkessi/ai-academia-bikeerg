@@ -1,4 +1,3 @@
-// DashboardLayout.jsx
 import React from "react";
 import {
   Box,
@@ -10,25 +9,22 @@ import {
   Heading,
 } from "@chakra-ui/react";
 import SpeedometerChart from "./SpeedometerChart";
+import LineChartLive from "./LineChartLive";
 import TaskUnlockList from "./TaskUnlockList";
 
-function DashboardLayout({ metrics, onStart, onStop, isStartDisabled, energy }) {
+function DashboardLayout({ metrics, onStart, onStop, energy }) {
   return (
-    <Box border="2px solid gray" borderRadius="md" p={4}>
+    <Box border="2px solid gray" borderRadius="md" p={4} height="100%">
       <Grid
         templateColumns="repeat(7, 1fr)"
         templateRows="auto auto auto"
         gap={4}
+        height="100%"
       >
         {/* Row 1 - Start/Stop + Metrics */}
         <GridItem colSpan={1}>
           <VStack spacing={2}>
-            <Button
-              colorScheme="green"
-              size="lg"
-              onClick={onStart}
-              isDisabled={isStartDisabled}
-            >
+            <Button colorScheme="green" size="lg" onClick={onStart}>
               Start
             </Button>
             <Button colorScheme="red" size="lg" onClick={onStop}>
@@ -38,7 +34,7 @@ function DashboardLayout({ metrics, onStart, onStop, isStartDisabled, energy }) 
         </GridItem>
 
         {["Power", "Stroke", "Distance", "Time", "Energy", "Status"].map(
-          (label, index) => (
+          (label) => (
             <GridItem
               key={label}
               colSpan={1}
@@ -65,7 +61,6 @@ function DashboardLayout({ metrics, onStart, onStop, isStartDisabled, energy }) 
             borderRadius="md"
             p={4}
             bg="white"
-            minHeight="250px"
           >
             <SpeedometerChart energy={metrics.energy} />
           </Box>
@@ -73,18 +68,20 @@ function DashboardLayout({ metrics, onStart, onStop, isStartDisabled, energy }) 
 
         <GridItem colSpan={4}>
           <Box
-            height="100%"
+            height="300px"
+            overflow="hidden"
             border="1px solid gray"
             borderRadius="md"
             p={4}
+            textAlign="center"
             bg="white"
-            minHeight="250px"
           >
-            <Text fontWeight="bold" mb={2}>📈 Live Power & Stroke</Text>
+            <Text fontWeight="bold" mb={2}>Live Power & Stroke</Text>
+            <LineChartLive power={metrics.power} stroke={metrics.stroke} />
           </Box>
         </GridItem>
 
-        {/* Row 3 - AI Task + Reserved */}
+        {/* Row 3 - AI Tasks + Info Box */}
         <GridItem colSpan={3}>
           <Box border="1px solid gray" borderRadius="md" p={4}>
             <TaskUnlockList energy={energy} />
@@ -93,7 +90,7 @@ function DashboardLayout({ metrics, onStart, onStop, isStartDisabled, energy }) 
 
         <GridItem colSpan={4}>
           <Box border="1px solid gray" borderRadius="md" p={4}>
-            {/* Future: Confetti, InfoBox, Tooltips */}
+            {/* Future enhancements like tooltips, confetti etc */}
           </Box>
         </GridItem>
       </Grid>

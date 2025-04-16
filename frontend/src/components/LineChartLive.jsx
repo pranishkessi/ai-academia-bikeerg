@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Chart as ChartJS,
   LineElement,
@@ -7,6 +7,7 @@ import {
   PointElement,
   Tooltip,
   Legend,
+  Filler,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 
@@ -16,91 +17,76 @@ ChartJS.register(
   LinearScale,
   PointElement,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
 
-function LineChartLive() {
-  const chartRef = useRef(null);
+function LineChartLive({ power, stroke }) {
   const MAX_POINTS = 30;
 
+  const [chartLabels, setChartLabels] = useState([]);
+  const [powerData, setPowerData] = useState([]);
+  const [strokeData, setStrokeData] = useState([]);
+
   useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const response = await fetch("http://127.0.0.1:8080/data");
-        const data = await response.json();
+    const now = new Date().toLocaleTimeString();
 
-        const chart = chartRef.current;
-        if (chart) {
-          const labels = chart.data.labels;
-          const powerData = chart.data.datasets[0].data;
-          const strokeData = chart.data.datasets[1].data;
-
-          const now = new Date().toLocaleTimeString();
-
-          labels.push(now);
-          powerData.push(data.power_watts);
-          strokeData.push(data.stroke_rate);
-
-          if (labels.length > MAX_POINTS) {
-            labels.shift();
-            powerData.shift();
-            strokeData.shift();
-          }
-
-          chart.update();
-        }
-      } catch (err) {
-        console.error("LineChart error:", err);
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
+    setChartLabels((prev) => [...prev.slice(-MAX_POINTS + 1), now]);
+    setPowerData((prev) => [...prev.slice(-MAX_POINTS + 1), power]);
+    setStrokeData((prev) => [...prev.slice(-MAX_POINTS + 1), stroke]);
+  }, [power, stroke]);
 
   const chartData = {
-    labels: [],
+    labels: chartLabels,
     datasets: [
       {
         label: "Power (W)",
-        data: [],
+        data: powerData,
         borderColor: "#3182ce",
-        backgroundColor: "#3182ce44",
+        backgroundColor: "rgba(49, 130, 206, 0.2)",
         fill: true,
-        tension: 0.3,
+        tension: 0.4,
+        pointRadius: 0,
       },
       {
         label: "Stroke Rate",
-        data: [],
+        data: strokeData,
         borderColor: "#38a169",
-        backgroundColor: "#38a16944",
+        backgroundColor: "rgba(56, 161, 105, 0.2)",
         fill: true,
-        tension: 0.3,
+        tension: 0.4,
+        pointRadius: 0,
       },
     ],
   };
 
   const chartOptions = {
     responsive: true,
-    animation: { duration: 300 },
+    maintainAspectRatio: false,
+    animation: {
+      duration: 800,
+      easing: "easeInOutQuad",
+    },
     scales: {
-      x: { title: { display: true, text: "Time" } },
-      y: { beginAtZero: true },
+      x: {
+        title: { display: true, text: "Time" },
+        ticks: { maxTicksLimit: 6 },
+      },
+      y: {
+        beginAtZero: true,
+        suggestedMax: 200,
+        title: { display: true, text: "Value" },
+      },
     },
     plugins: {
       legend: {
         position: "top",
-        labels: { boxWidth: 10, font: { size: 12 } },
+        labels: { font: { size: 12 }, boxWidth: 12 },
       },
     },
   };
 
-  return (
-    <Line
-      data={chartData}
-      options={chartOptions}
-      ref={chartRef}
-    />
-  );
+  return <Line data={chartData} options={chartOptions} />;
 }
 
 export default LineChartLive;

@@ -1,4 +1,3 @@
-// App.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
@@ -19,17 +18,22 @@ function App() {
   const toast = useToast();
   const [sessionEnded, setSessionEnded] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("http://127.0.0.1:8080/data");
-        setData(response.data);
-        setStatus(response.data.session_active ? "Active" : "Inactive");
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+  const fetchData = async () => {
+    try {
+      const response = await axios.get("http://127.0.0.1:8080/data");
+      setData(response.data);
 
+      if (response.data.session_active) {
+        setStatus("Active");
+      } else {
+        setStatus("Inactive");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 1000);
     return () => clearInterval(interval);
@@ -80,7 +84,7 @@ function App() {
 
   return (
     <ChakraProvider>
-      <VStack p={4} spacing={6} align="stretch">
+      <VStack p={4} spacing={6} align="stretch" height="100vh" overflow="hidden">
         <DashboardLayout
           metrics={{
             power: data.power_watts,
@@ -95,55 +99,52 @@ function App() {
           energy={data.energy_kwh}
         />
 
-{sessionEnded && (
-  <ScaleFade initialScale={0.9} in={sessionEnded}>
-    <Box
-      position="fixed"
-      top="50%"
-      left="50%"
-      transform="translate(-50%, -50%)"
-      bg="white"
-      borderRadius="lg"
-      boxShadow="2xl"
-      p={6}
-      maxW="500px"
-      width="90%"
-      border="2px solid #CBD5E0"
-      zIndex={1000}
-    >
-      <Text fontSize="xl" fontWeight="bold" mb={4} color="blue.700">
-        Session Summary
-      </Text>
+        {sessionEnded && (
+          <ScaleFade initialScale={0.9} in={sessionEnded}>
+            <Box
+              position="fixed"
+              top="50%"
+              left="50%"
+              transform="translate(-50%, -50%)"
+              bg="white"
+              borderRadius="lg"
+              boxShadow="xl"
+              p={6}
+              maxW="500px"
+              zIndex="999"
+              border="2px solid #CBD5E0"
+            >
+              <Text fontSize="xl" fontWeight="bold" mb={4} color="blue.700">
+                Session Summary
+              </Text>
 
-      {/* Close Button */}
-      <Box position="absolute" top="10px" right="10px">
-        <button
-          onClick={() => setSessionEnded(false)}
-          style={{
-            background: "transparent",
-            border: "none",
-            fontSize: "20px",
-            cursor: "pointer",
-            color: "#999",
-          }}
-          aria-label="Close Summary"
-        >
-          ✖
-        </button>
-      </Box>
+              <Box position="absolute" top="10px" right="10px">
+                <button
+                  onClick={() => setSessionEnded(false)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    fontSize: "20px",
+                    cursor: "pointer",
+                    color: "#999",
+                  }}
+                  aria-label="Close Summary"
+                >
+                  ✖
+                </button>
+              </Box>
 
-      <VStack align="start" spacing={2}>
-        <Text><strong>Elapsed Time:</strong> {formatTime(data.elapsed_time)}</Text>
-        <Text><strong>Distance:</strong> {data.distance_meters} meters</Text>
-        <Text><strong>Energy:</strong> {data.energy_kwh} kWh</Text>
-        <Text><strong>Tasks Unlocked:</strong> {
-          ["0.002", "0.004", "0.006", "0.008"].filter(t => data.energy_kwh >= parseFloat(t)).length
-        } / 4</Text>
-      </VStack>
-    </Box>
-  </ScaleFade>
-)}
-
+              <VStack align="start" spacing={2}>
+                <Text><strong>Elapsed Time:</strong> {formatTime(data.elapsed_time)}</Text>
+                <Text><strong>Distance:</strong> {data.distance_meters} meters</Text>
+                <Text><strong>Energy:</strong> {data.energy_kwh} kWh</Text>
+                <Text><strong>Tasks Unlocked:</strong> {
+                  ["0.002", "0.004", "0.006", "0.008"].filter(t => data.energy_kwh >= parseFloat(t)).length
+                } / 4</Text>
+              </VStack>
+            </Box>
+          </ScaleFade>
+        )}
       </VStack>
     </ChakraProvider>
   );
