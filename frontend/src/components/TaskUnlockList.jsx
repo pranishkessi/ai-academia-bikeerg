@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Box,
   Text,
@@ -10,8 +10,8 @@ import {
   ScaleFade,
 } from "@chakra-ui/react";
 import { FaLock, FaUnlock } from "react-icons/fa";
+import confetti from "canvas-confetti";
 
-// Define the energy thresholds and descriptions
 const tasks = [
   {
     label: "Simple Google search query",
@@ -36,10 +36,33 @@ const tasks = [
 ];
 
 function TaskUnlockList({ energy }) {
+  const hasFiredRef = useRef(false);
   const energyValue = parseFloat(energy) || 0;
-
   const [activeTooltipIndex, setActiveTooltipIndex] = useState(null);
 
+  // 🎉 Fire confetti once when final threshold is met
+  useEffect(() => {
+    if (energyValue >= 0.008 && !hasFiredRef.current) {
+      hasFiredRef.current = true;
+
+      confetti({
+        particleCount: 150,
+        spread: 80,
+        origin: { y: 0.6 },
+      });
+
+      confetti({
+        particleCount: 50,
+        spread: 100,
+        startVelocity: 30,
+        decay: 0.9,
+        scalar: 0.75,
+        origin: { y: 0.6 },
+      });
+    }
+  }, [energyValue]);
+
+  // Tooltip appears only for the newly unlocked task
   useEffect(() => {
     const newlyUnlocked = tasks.findIndex(
       (task, i) =>
