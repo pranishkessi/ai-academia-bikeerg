@@ -36,40 +36,39 @@ const tasks = [
 ];
 
 function TaskUnlockList({ energy }) {
-  const hasFiredRef = useRef(false);
   const energyValue = parseFloat(energy) || 0;
+
   const [activeTooltipIndex, setActiveTooltipIndex] = useState(null);
+  const hasFiredRefs = useRef(new Array(tasks.length).fill(false));
+  const prevEnergyRef = useRef(0);
 
-  // 🎉 Fire confetti once when final threshold is met
+  // 🔄 Reset state when a new session starts (i.e. energy drops sharply)
   useEffect(() => {
-    if (energyValue >= 0.008 && !hasFiredRef.current) {
-      hasFiredRef.current = true;
-
-      confetti({
-        particleCount: 150,
-        spread: 80,
-        origin: { y: 0.6 },
-      });
-
-      confetti({
-        particleCount: 50,
-        spread: 100,
-        startVelocity: 30,
-        decay: 0.9,
-        scalar: 0.75,
-        origin: { y: 0.6 },
-      });
+    if (energyValue < 0.001 && prevEnergyRef.current >= 0.001) {
+      setActiveTooltipIndex(null);
+      hasFiredRefs.current = new Array(tasks.length).fill(false);
     }
+    prevEnergyRef.current = energyValue;
   }, [energyValue]);
 
-  // Tooltip appears only for the newly unlocked task
+  // 🎉 Confetti + Tooltip logic per threshold
   useEffect(() => {
-    const newlyUnlocked = tasks.findIndex(
-      (task, i) =>
-        energyValue >= task.threshold &&
-        (i === tasks.length - 1 || energyValue < tasks[i + 1].threshold)
-    );
-    setActiveTooltipIndex(newlyUnlocked >= 0 ? newlyUnlocked : null);
+    tasks.forEach((task, idx) => {
+      if (energyValue >= task.threshold && !hasFiredRefs.current[idx]) {
+        hasFiredRefs.current[idx] = true;
+
+        // Confetti animation
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 },
+          scalar: 0.9,
+        });
+
+        // Set tooltip for that task only
+        setActiveTooltipIndex(idx);
+      }
+    });
   }, [energyValue]);
 
   return (
@@ -82,7 +81,7 @@ function TaskUnlockList({ energy }) {
       width="100%"
     >
       <Heading size="sm" mb={3}>
-        AI Tasks Unlocked
+        AI Tasks
       </Heading>
       <VStack align="start" spacing={3}>
         {tasks.map((task, idx) => {
