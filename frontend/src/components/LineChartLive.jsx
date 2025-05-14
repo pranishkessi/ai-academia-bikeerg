@@ -1,3 +1,4 @@
+// src/components/LineChartLive.jsx
 import React, { useEffect, useState } from "react";
 import {
   Chart as ChartJS,
@@ -64,8 +65,8 @@ function LineChartLive({ power, stroke }) {
     responsive: true,
     maintainAspectRatio: false,
     animation: {
-      duration: 800,
-      easing: "easeInOutQuad",
+      duration: 500,
+      easing: "easeOutQuart",
     },
     scales: {
       x: {
@@ -86,7 +87,11 @@ function LineChartLive({ power, stroke }) {
     },
   };
 
-  return <Line data={chartData} options={chartOptions} />;
+  return (
+    <div style={{ width: "100%", height: "260px" }}>
+      <Line data={chartData} options={chartOptions} />
+    </div>
+  );
 }
 
 export default LineChartLive;

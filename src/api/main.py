@@ -1,11 +1,12 @@
+# src/api/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import time
-import random
+import asyncio
+from src.api.ble_runner import ble_logger, ble_state
 
 app = FastAPI()
+last_session_snapshot = {}
 
-# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,75 +14,56 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global session state
-state = {
-    "power": 0,
-    "stroke_rate": 0,
-    "distance": 0,
-    "elapsed": 0,
-    "last_time": time.time(),
-    "energy_kwh": 0.0,
-    "session_active": False
-}
-
-
-def reset_session():
-    state.update({
-        "power": random.randint(100, 150),
-        "stroke_rate": random.randint(60, 80),
-        "distance": 0,
-        "elapsed": 0,
-        "last_time": time.time(),
-        "energy_kwh": 0.0,
-        "session_active": True
-    })
-
-
-def simulate_session():
-    now = time.time()
-    elapsed_since_last = now - state["last_time"]
-    state["last_time"] = now
-
-    # Simulate only if active
-    if state["session_active"]:
-        state["elapsed"] += int(elapsed_since_last)
-
-        state["power"] += random.randint(-5, 5)
-        state["power"] = max(80, min(state["power"], 300))
-
-        state["stroke_rate"] += random.randint(-1, 1)
-        state["stroke_rate"] = max(50, min(state["stroke_rate"], 100))
-
-        state["distance"] += int(state["stroke_rate"] * (elapsed_since_last / 60) * 6)
-        state["energy_kwh"] += (state["power"] * elapsed_since_last) / 3600000
-
-    return {
-        "power_watts": int(state["power"]),
-        "stroke_rate": int(state["stroke_rate"]),
-        "distance_meters": int(state["distance"]),
-        "elapsed_time": int(state["elapsed"]),
-        "energy_kwh": round(state["energy_kwh"], 4),
-        "session_active": state["session_active"]
-    }
-
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(ble_logger())
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the Concept2 BikeErg API"}
-
+    return {"message": "Welcome to the Concept2 BikeErg Real-Time API"}
 
 @app.get("/data")
 def get_data():
-    return simulate_session()
-
+    return {
+        "power_watts": ble_state.get("power", 0) if ble_state.get("session_active") else 0,
+        "stroke_rate": int(ble_state.get("cadence", 0)) if ble_state.get("session_active") else 0,
+        "distance_meters": int(ble_state.get("distance", 0)) if ble_state.get("session_active") else 0,
+        "elapsed_time": int(ble_state.get("elapsed", 0)) if ble_state.get("session_active") else 0,
+        "energy_kwh": round(ble_state.get("energy_kwh", 0.0), 4) if ble_state.get("session_active") else 0.0,
+        "session_active": ble_state.get("session_active", False),
+        "connected": ble_state.get("connected", False),
+        "last_session_snapshot": last_session_snapshot,
+    }
 
 @app.post("/start")
-def start_session():
-    reset_session()
+async def start_session():
+    global reset_task
+    ble_state.update({
+        "session_active": True,
+        "elapsed": 0,
+        "distance": 0,
+        "energy_kwh": 0.0,
+    })
     return {"message": "Session started."}
 
-
 @app.post("/stop")
-def stop_session():
-    state["session_active"] = False
+async def stop_session():
+    last_session_snapshot.update({
+        "elapsed_time": ble_state["elapsed"],
+        "distance_meters": ble_state["distance"],
+        "energy_kwh": ble_state["energy_kwh"]
+    })
+    ble_state["session_active"] = False
+    asyncio.create_task(reset_after_delay())
     return {"message": "Session stopped."}
+
+async def reset_after_delay():
+    await asyncio.sleep(30)
+    ble_state.update({
+        "power": 0,
+        "cadence": 0.0,
+        "elapsed": 0,
+        "distance": 0,
+        "energy_kwh": 0.0,
+    })
+    last_session_snapshot.clear()

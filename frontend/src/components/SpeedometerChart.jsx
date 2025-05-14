@@ -99,9 +99,6 @@ function SpeedometerChart({ energy }) {
 
   return (
     <Box position="relative" height="150px" width="100%">
-      <Text fontWeight="bold" textAlign="center" mb={2}>
-        Energy Speedometer
-      </Text>
       <Box position="relative" height="100%">
         <Doughnut data={chartData} options={chartOptions} />
         <Text textAlign="center" mt={2} fontSize="lg" fontWeight="bold">

@@ -19,7 +19,7 @@ const tasks = [
     description: "You can now power a Google search query using the generated energy!",
   },
   {
-    label: "Local image or sound recognition",
+    label: "Sound recognition",
     threshold: 0.004,
     description: "Your energy is enough to power local AI for object or sound recognition!",
   },
@@ -29,7 +29,7 @@ const tasks = [
     description: "You can now convert speech into text using AI-powered transcription!",
   },
   {
-    label: "LLM inference (ChatGPT response)",
+    label: "LLM (ChatGPT response)",
     threshold: 0.008,
     description: "Your energy can now power an entire language model like ChatGPT!",
   },
@@ -73,12 +73,12 @@ function TaskUnlockList({ energy }) {
 
   return (
     <Box
-      bg="gray.50"
-      p={4}
+      bg="#cae8eb"
+      p={8}
       borderRadius="lg"
       boxShadow="md"
-      mt={6}
       width="100%"
+      height="100%"
     >
       <Heading size="sm" mb={3}>
         AI Tasks

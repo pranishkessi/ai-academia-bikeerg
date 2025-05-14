@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+// src/App.jsx
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import {
   Box,
@@ -8,6 +9,7 @@ import {
   Spinner,
   useToast,
   ScaleFade,
+  CloseButton,
 } from "@chakra-ui/react";
 import DashboardLayout from "./components/DashboardLayout";
 
@@ -15,18 +17,50 @@ function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [data, setData] = useState(null);
   const [status, setStatus] = useState("Inactive");
+  const [history, setHistory] = useState([]);
+  const [lastSession, setLastSession] = useState(null);
+  const [showSummary, setShowSummary] = useState(false);
+
+  const closedManuallyRef = useRef(false);
+  const timeoutRef = useRef(null);
   const toast = useToast();
-  const [sessionEnded, setSessionEnded] = useState(false);
 
   const fetchData = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:8080/data");
-      setData(response.data);
+      const res = await axios.get("http://127.0.0.1:8080/data");
+      const d = res.data;
+      setData(d);
 
-      if (response.data.session_active) {
+      if (d.session_active) {
         setStatus("Active");
+        setIsRunning(true);
+        setHistory((prev) => [
+          ...prev.slice(-29),
+          {
+            time: new Date().toLocaleTimeString(),
+            power: d.power_watts,
+            stroke: d.stroke_rate,
+          },
+        ]);
+        closedManuallyRef.current = false;
+        if (showSummary) setShowSummary(false);
       } else {
         setStatus("Inactive");
+        setIsRunning(false);
+        if (closedManuallyRef.current) return;
+
+        if (
+          d.last_session_snapshot &&
+          d.last_session_snapshot.elapsed_time > 0
+        ) {
+          setLastSession(d.last_session_snapshot);
+          setShowSummary(true);
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = setTimeout(() => {
+            setShowSummary(false);
+            setLastSession(null);
+          }, 30000);
+        }
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -36,7 +70,10 @@ function App() {
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 1000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeoutRef.current);
+    };
   }, []);
 
   const handleStart = async () => {
@@ -52,9 +89,11 @@ function App() {
     }
     try {
       await axios.post("http://127.0.0.1:8080/start");
-      setStatus("Active");
       setIsRunning(true);
-      setSessionEnded(false);
+      setStatus("Active");
+      setShowSummary(false);
+      setLastSession(null);
+      closedManuallyRef.current = false;
     } catch (error) {
       console.error("Error starting session:", error);
     }
@@ -63,9 +102,8 @@ function App() {
   const handleStop = async () => {
     try {
       await axios.post("http://127.0.0.1:8080/stop");
-      setStatus("Inactive");
       setIsRunning(false);
-      setSessionEnded(true);
+      setStatus("Inactive");
     } catch (error) {
       console.error("Error stopping session:", error);
     }
@@ -84,23 +122,19 @@ function App() {
 
   return (
     <ChakraProvider>
-      <VStack p={4} spacing={6} align="stretch" height="100vh" overflow="hidden">
+      <VStack p={4} spacing={6} align="stretch" h="100vh" overflow="hidden">
         <DashboardLayout
-          metrics={{
-            power: data.power_watts,
-            stroke: data.stroke_rate,
-            distance: data.distance_meters,
-            time: formatTime(data.elapsed_time),
-            energy: data.energy_kwh,
-            status: status,
-          }}
+          metrics={data}
+          history={history}
+          sessionActive={data.session_active}
+          showSummary={showSummary}
+          lastSession={lastSession}
           onStart={handleStart}
           onStop={handleStop}
-          energy={data.energy_kwh}
         />
 
-        {sessionEnded && (
-          <ScaleFade initialScale={0.9} in={sessionEnded}>
+        {showSummary && lastSession && (
+          <ScaleFade in={showSummary}>
             <Box
               position="fixed"
               top="50%"
@@ -111,36 +145,42 @@ function App() {
               boxShadow="xl"
               p={6}
               maxW="500px"
-              zIndex="999"
+              zIndex="9999"
               border="2px solid #CBD5E0"
             >
+              <Box position="absolute" top="10px" right="10px">
+                <CloseButton
+                  onClick={() => {
+                    setShowSummary(false);
+                    setLastSession(null);
+                    closedManuallyRef.current = true;
+                  }}
+                />
+              </Box>
+
               <Text fontSize="xl" fontWeight="bold" mb={4} color="blue.700">
                 Session Summary
               </Text>
 
-              <Box position="absolute" top="10px" right="10px">
-                <button
-                  onClick={() => setSessionEnded(false)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    fontSize: "20px",
-                    cursor: "pointer",
-                    color: "#999",
-                  }}
-                  aria-label="Close Summary"
-                >
-                  ✖
-                </button>
-              </Box>
-
               <VStack align="start" spacing={2}>
-                <Text><strong>Elapsed Time:</strong> {formatTime(data.elapsed_time)}</Text>
-                <Text><strong>Distance:</strong> {data.distance_meters} meters</Text>
-                <Text><strong>Energy:</strong> {data.energy_kwh} kWh</Text>
-                <Text><strong>Tasks Unlocked:</strong> {
-                  ["0.002", "0.004", "0.006", "0.008"].filter(t => data.energy_kwh >= parseFloat(t)).length
-                } / 4</Text>
+                <Text>
+                  <Box as="span" fontWeight="bold">Elapsed Time:</Box>{" "}
+                  {formatTime(lastSession.elapsed_time)}
+                </Text>
+                <Text>
+                  <Box as="span" fontWeight="bold">Distance:</Box>{" "}
+                  {lastSession.distance_meters} m
+                </Text>
+                <Text>
+                  <Box as="span" fontWeight="bold">Energy:</Box>{" "}
+                  {lastSession.energy_kwh.toFixed(4)} kWh
+                </Text>
+                <Text>
+                  <Box as="span" fontWeight="bold">Tasks Unlocked:</Box>{" "}
+                  {[0.002, 0.004, 0.006, 0.008].filter(
+                    (t) => lastSession.energy_kwh >= t
+                  ).length} / 4
+                </Text>
               </VStack>
             </Box>
           </ScaleFade>
@@ -150,9 +190,9 @@ function App() {
   );
 }
 
-function formatTime(seconds) {
-  const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
-  const secs = (seconds % 60).toString().padStart(2, "0");
+function formatTime(totalSeconds) {
+  const mins = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+  const secs = (totalSeconds % 60).toString().padStart(2, "0");
   return `${mins}:${secs}`;
 }
 
