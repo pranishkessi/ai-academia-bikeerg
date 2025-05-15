@@ -88,20 +88,48 @@ function DashboardLayout({
           </Box>
         </GridItem>
       </Grid>
-
       {/* Row 3 - AI Tasks + Animation Box */}
       <Grid templateColumns={{ base: "1fr", md: "3fr 2fr" }} gap={4} mb={4} flexGrow={1}>
-        <GridItem>
-          <Box bg="#cae8eb" p={4} borderRadius="md" height="100%" boxShadow="sm">
-            <TaskUnlockList energy={metrics?.energy_kwh || 0} />
-          </Box>
-        </GridItem>
-        <GridItem>
-          <Box bg="#cae8eb" p={4} borderRadius="md" height="100%" boxShadow="sm" textAlign="center">
-            <Text fontSize="sm" color="gray.400">[ Reserved for future AI avatar / animations ]</Text>
-          </Box>
-        </GridItem>
-      </Grid>
+       <GridItem>
+         <Box bg="#cae8eb" p={4} borderRadius="md" height="100%" boxShadow="sm">
+          <TaskUnlockList energy={metrics?.energy_kwh || 0} />
+        </Box>
+      </GridItem>
+      <GridItem>
+        <Box
+        bg="#cae8eb"
+        p={4}
+        borderRadius="md"
+        boxShadow="sm"
+        height="100%"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+       >
+       <Box
+        height="100%"
+        width="100%"
+        maxHeight="500px"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+       >
+      <img
+        src="/AIBOT.png"
+        alt="AI Avatar"
+        style={{
+          maxHeight: "100%",
+          maxWidth: "100%",
+          objectFit: "contain",
+          borderRadius: "0.8rem"
+        }}
+      />
+    </Box>
+  </Box>
+</GridItem>
+
+
+</Grid>
 
       {/* Footer - Logo placement */}
       <Box w="100%" py={4} textAlign="center" borderTop="1px solid #CBD5E0">

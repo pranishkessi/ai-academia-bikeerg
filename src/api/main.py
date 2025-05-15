@@ -2,11 +2,36 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
+import json
+import os
+from datetime import datetime
 from src.api.ble_runner import ble_logger, ble_state
 
 app = FastAPI()
 last_session_snapshot = {}
 
+# Directory for session logs
+LOG_DIR = "session_logs"
+os.makedirs(LOG_DIR, exist_ok=True)
+
+# Thresholds for unlocked AI tasks
+THRESHOLDS = [0.002, 0.004, 0.006, 0.008]
+TASK_LABELS = [
+    "Google Search",
+    "Image/Sound Recognition",
+    "Speech-to-Text",
+    "LLM Inference"
+]
+
+# Log writer
+def log_session_to_file(snapshot):
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    filename = os.path.join(LOG_DIR, f"session_{timestamp}.json")
+    with open(filename, "w") as f:
+        json.dump(snapshot, f, indent=2)
+    print(f"📄 Session saved to {filename}")
+
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -37,7 +62,6 @@ def get_data():
 
 @app.post("/start")
 async def start_session():
-    global reset_task
     ble_state.update({
         "session_active": True,
         "elapsed": 0,
@@ -48,11 +72,18 @@ async def start_session():
 
 @app.post("/stop")
 async def stop_session():
+    energy = ble_state.get("energy_kwh", 0.0)
+    unlocked_tasks = [label for t, label in zip(THRESHOLDS, TASK_LABELS) if energy >= t]
+
     last_session_snapshot.update({
-        "elapsed_time": ble_state["elapsed"],
-        "distance_meters": ble_state["distance"],
-        "energy_kwh": ble_state["energy_kwh"]
+        "elapsed_time": ble_state.get("elapsed", 0),
+        "distance_meters": ble_state.get("distance", 0),
+        "energy_kwh": round(energy, 4),
+        "tasks_unlocked": unlocked_tasks
     })
+
+    log_session_to_file(last_session_snapshot)
+
     ble_state["session_active"] = False
     asyncio.create_task(reset_after_delay())
     return {"message": "Session stopped."}
