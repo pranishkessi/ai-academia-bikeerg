@@ -73,17 +73,17 @@ function TaskUnlockList({ energy }) {
 
   return (
     <Box
-      bg="#cae8eb"
-      p={8}
-      borderRadius="lg"
-      boxShadow="md"
-      width="100%"
-      height="100%"
+      bg="transparent"
+      p={4}
+      borderRadius="md"
+      minHeight="320px"
+      maxHeight="320px"
+      overflowY="auto"
     >
       <Heading size="sm" mb={3}>
         AI Tasks
       </Heading>
-      <VStack align="start" spacing={3}>
+      <VStack align="start" spacing={3} maxHeight="250px" overflow="auto">
         {tasks.map((task, idx) => {
           const unlocked = energyValue >= task.threshold;
           const showTooltip = idx === activeTooltipIndex;

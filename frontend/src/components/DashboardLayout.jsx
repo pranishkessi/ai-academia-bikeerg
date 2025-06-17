@@ -14,6 +14,7 @@ import {
 import SpeedometerChart from "./SpeedometerChart";
 import LineChartLive from "./LineChartLive";
 import TaskUnlockList from "./TaskUnlockList";
+import AvatarDisplay from "./AvatarDisplay";
 
 function DashboardLayout({
   metrics,
@@ -97,34 +98,16 @@ function DashboardLayout({
       </GridItem>
       <GridItem>
         <Box
-        bg="#cae8eb"
-        p={4}
-        borderRadius="md"
-        boxShadow="sm"
-        height="100%"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-       >
-       <Box
-        height="100%"
-        width="100%"
-        maxHeight="500px"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-       >
-      <img
-        src="/AIBOT.png"
-        alt="AI Avatar"
-        style={{
-          maxHeight: "100%",
-          maxWidth: "100%",
-          objectFit: "contain",
-          borderRadius: "0.8rem"
-        }}
-      />
-    </Box>
+          bg="transparent"
+          p={0}
+          borderRadius="none"
+          boxShadow="none"
+          height="100%"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+    >
+    <AvatarDisplay />
   </Box>
 </GridItem>
 
