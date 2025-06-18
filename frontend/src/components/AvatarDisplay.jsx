@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from "react";
 import Lottie from "lottie-react";
 import { Box } from "@chakra-ui/react";
+import AvatarChatMessage from "./AvatarChatMessage";
 
-const AvatarDisplay = () => {
+const AvatarDisplay = ({ message, onClear }) => {
   const [animationData, setAnimationData] = useState(null);
 
   useEffect(() => {
@@ -24,6 +25,8 @@ const AvatarDisplay = () => {
   display="flex"
   alignItems="center"
   justifyContent="center"
+  position="relative"
+  overflow="visible" // ✅ prevent clipping
 >
       {animationData && (
         <Lottie
@@ -37,6 +40,7 @@ const AvatarDisplay = () => {
           }}
         />
       )}
+      <AvatarChatMessage message={message} onClear={onClear} />
     </Box>
   );
 };
