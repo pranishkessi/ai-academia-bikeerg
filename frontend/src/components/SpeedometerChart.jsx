@@ -98,8 +98,8 @@ function SpeedometerChart({ energy }) {
   }), []);
 
   return (
-    <Box position="relative" height="150px" width="100%">
-      <Box position="relative" height="100%">
+    <Box position="relative" height="140px" width="100%">
+      <Box position="relative" height="140%">
         <Doughnut data={chartData} options={chartOptions} />
         <Text textAlign="center" mt={2} fontSize="lg" fontWeight="bold">
           {energy.toFixed(4)} kWh

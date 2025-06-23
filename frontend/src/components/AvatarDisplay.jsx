@@ -20,8 +20,8 @@ const AvatarDisplay = ({ message, onClear }) => {
   p={0}
   borderRadius="none"
   boxShadow="none"
-  minHeight="320px"
-  maxHeight="320px"
+  minHeight="720px"
+  maxHeight="720px"
   display="flex"
   alignItems="center"
   justifyContent="center"
@@ -34,8 +34,8 @@ const AvatarDisplay = ({ message, onClear }) => {
           loop
           autoplay
           style={{
-            width: "80%",
-            height: "80%",
+            width: "100%",
+            height: "100%",
             background: "transparent",
           }}
         />

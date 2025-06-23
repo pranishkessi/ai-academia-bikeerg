@@ -2,14 +2,15 @@
 import React from "react";
 import {
   Box,
+  Button,
   Grid,
   GridItem,
-  Button,
-  Text,
   VStack,
+  HStack,
+  Text,
   Heading,
+  Image,
   Flex,
-  useBreakpointValue,
 } from "@chakra-ui/react";
 import SpeedometerChart from "./SpeedometerChart";
 import LineChartLive from "./LineChartLive";
@@ -17,22 +18,14 @@ import TaskUnlockList from "./TaskUnlockList";
 import AvatarDisplay from "./AvatarDisplay";
 import { useAvatarMessages } from "../hooks/useAvatarMessages";
 
-function DashboardLayout({
-  metrics,
-  history,
-  sessionActive,
-  showSummary,
-  lastSession,
-  onStart,
-  onStop,
-}) {
-  const thresholds = [0.002, 0.004, 0.006, 0.008];
-  const unlocked = lastSession
-    ? thresholds.filter((t) => lastSession.energy_kwh >= t).length
-    : 0;
-  const statusColor = metrics?.connected ? "green.500" : "red.500";
+function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
+  const energy = metrics?.energy_kwh || 0;
+  const power = metrics?.power_watts || 0;
+  const stroke = metrics?.stroke_rate || 0;
+  const distance = metrics?.distance_meters || 0;
+  const time = metrics?.elapsed_time || 0;
+  const status = metrics?.connected ? "Connected" : "Not Connected";
 
-  // ✅ Define unlockable tasks (for message triggers)
   const unlockedTasks = [
     { label: "Simple Google search query", threshold: 0.002 },
     { label: "Sound recognition", threshold: 0.004 },
@@ -40,120 +33,189 @@ function DashboardLayout({
     { label: "LLM (ChatGPT response)", threshold: 0.008 },
   ];
 
-  // ✅ Use avatar message hook
-  const { message, clearMessage, testSetMessage } = useAvatarMessages({
-    energy: metrics?.energy_kwh || 0,
-    elapsedTime: metrics?.elapsed_time || 0,
+  const { message, clearMessage } = useAvatarMessages({
+    energy,
+    elapsedTime: time,
     sessionActive,
     unlockedTasks,
   });
 
   return (
-    <Flex direction="column" minH="100vh" overflow="hidden" px={[2, 4, 8]} py={2} bg="gray.50">
-      {/* Row 1 - Start/Stop + Metrics */}
-      <Grid templateColumns={["1fr", null, "repeat(7, 1fr)"]} gap={4} mb={4}>
+    <VStack spacing={4} w="100vw" h="100vh" p={4} bg="#cbdfe6">
+      {/* Top Metrics & Controls */}
+      <Grid templateColumns="repeat(8, 1fr)" gap={4} w="100%">
+        {/* Start/Stop + Language */}
         <GridItem colSpan={1}>
-          <VStack spacing={2}>
-            <Button colorScheme="green" size="lg" onClick={onStart}>Start</Button>
-            <Button colorScheme="red" size="lg" onClick={onStop}>Stop</Button>
-<Button size="sm" onClick={() => testSetMessage({ type: "toast", text: "🚀 Session started (test)" })}>
-  Test Toast
-</Button>
-<Button size="sm" onClick={() => testSetMessage({ type: "bubble", text: "🔓 Task unlocked (test)" })}>
-  Test Bubble
-</Button>
-<Button size="sm" onClick={() => testSetMessage({ type: "float", text: "💪 Keep pushing!" })}>
-  Test Floating
-</Button>
-          </VStack>
+            <VStack spacing={4} align="start">
+              <HStack spacing={4}>
+                <Button
+                  onClick={onStart}
+                  bg="green.500"
+                  color="white"
+                  borderRadius="full"
+                  height="120px"
+                  width="120px"
+                  fontSize="md"
+                  fontWeight="bold"
+                  _hover={{ bg: "green.600" }}
+                >
+                  START
+                </Button>
+                <Button
+                  onClick={onStop}
+                  bg="red.500"
+                  color="white"
+                  borderRadius="full"
+                  height="120px"
+                  width="120px"
+                  fontSize="md"
+                  fontWeight="bold"
+                  _hover={{ bg: "red.600" }}
+                >
+                  STOP
+                </Button>
+              </HStack>
+              <HStack spacing={4} pt={4}>
+                <Button size="sm">DE</Button>
+                <Button size="sm">EN</Button>
+              </HStack>
+            </VStack>
+
         </GridItem>
 
+        {/* Metrics */}
         {[
-          ["Power", `${metrics?.power_watts || 0} W`],
-          ["Stroke", `${metrics?.stroke_rate || 0} SPM`],
-          ["Distance", `${metrics?.distance_meters || 0} m`],
-          ["Time", formatTime(metrics?.elapsed_time || 0)],
-          ["Energy", `${(metrics?.energy_kwh || 0).toFixed(4)} kWh`],
-          ["Status", metrics?.connected ? (
-           <Box as="span" color="green.500">Connected</Box>
-          ) : (
-           <Box as="span" color="red.500">Not Connected</Box>
-          )],
-        ].map(([label, value]) => (
+          { label: "Power", value: `${power} W` },
+          { label: "Stroke", value: `${stroke} SPM` },
+          { label: "Distance", value: `${distance} m` },
+          { label: "Time", value: formatTime(time) },
+          { label: "Energy", value: `${energy.toFixed(4)} kWh` },
+          {
+            label: "Status",
+            value: (
+              <Text color={metrics?.connected ? "green.500" : "red.500"}>
+                {status}
+              </Text>
+            ),
+          },
+        ].map((item, idx) => (
           <GridItem
-            key={label}
-            colSpan={1}
-            bg="#cae8eb"
+            key={idx}
+            p={3}
+            bg="white"
             borderRadius="md"
             textAlign="center"
-            p={3}
             boxShadow="sm"
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
           >
-            <Heading as="h3" size="sm" color="gray.600">
-              {label}
+            <Heading size="sm" color="gray.600">
+              {item.label}
             </Heading>
             <Text mt={2} fontWeight="bold" fontSize="lg">
-              {value}
+              {item.value}
             </Text>
           </GridItem>
         ))}
       </Grid>
 
-      {/* Row 2 - Charts */}
-      <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4} mb={4}>
+      {/* Main Dashboard: 70-30 Split */}
+      <Grid templateColumns="7fr 3fr" gap={4} w="100%" flex={1}>
+        {/* LEFT (70%) */}
         <GridItem>
-          <Box bg="#cae8eb" p={4} borderRadius="md" height="100%" boxShadow="sm">
-            <Heading size="sm" mb={2}>Energy Speedometer</Heading>
-            <SpeedometerChart energy={metrics?.energy_kwh || 0} />
-          </Box>
+          <Grid templateRows="1fr 1fr" gap={4} h="100%">
+            {/* Speedometer + Chart (centered content) */}
+            <Grid templateColumns="1fr 1fr" gap={4}>
+              <Flex
+                p={4}
+                bg="#cae8eb"
+                borderRadius="md"
+                boxShadow="md"
+                justify="center"
+                align="center"
+              >
+                <SpeedometerChart energy={energy} />
+              </Flex>
+              <Flex
+                p={4}
+                bg="#cae8eb"
+                borderRadius="md"
+                boxShadow="md"
+                height="100%"
+              >
+                <LineChartLive power={power} stroke={stroke} />
+              </Flex>
+            </Grid>
+
+            {/* Tasks (centered vertically) */}
+            <Flex
+              p={4}
+              bg="#cae8eb"
+              borderRadius="md"
+              boxShadow="md"
+              align="flex-start"
+              justify="flex-start"
+            >
+              <TaskUnlockList energy={energy} />
+            </Flex>
+          </Grid>
         </GridItem>
 
-        <GridItem>
-          <Box bg="#cae8eb" p={4} borderRadius="md" height="300px" overflow="hidden" boxShadow="sm">
-            <Heading size="sm" mb={2}>Live Power & Stroke</Heading>
-            <LineChartLive power={metrics?.power_watts || 0} stroke={metrics?.stroke_rate || 0} />
-          </Box>
-        </GridItem>
-      </Grid>
-
-      {/* Row 3 - AI Tasks + Animation Box */}
-      <Grid templateColumns={{ base: "1fr", md: "3fr 2fr" }} gap={4} mb={4} flexGrow={1}>
-        <GridItem>
-          <Box bg="#cae8eb" p={4} borderRadius="md" height="100%" boxShadow="sm">
-            <TaskUnlockList energy={metrics?.energy_kwh || 0} />
-          </Box>
-        </GridItem>
-
+        {/* RIGHT (30%) */}
         <GridItem>
           <Box
-            bg="transparent"
-            p={0}
-            borderRadius="none"
-            boxShadow="none"
-            height="100%"
+            p={4}
+            bg="#cae8eb"
+            borderRadius="md"
+            boxShadow="md"
+            h="100%"
             display="flex"
+            flexDirection="column"
+            justifyContent="flex-end"
             alignItems="center"
-            justifyContent="center"
-            overflow="visible" // ✅ let content render outside the box
+            position="relative"
           >
+            {/* Avatar w/ Message Bubble (handled inside AvatarDisplay) */}
             <AvatarDisplay message={message} onClear={clearMessage} />
           </Box>
         </GridItem>
       </Grid>
 
-      {/* Footer - Logo placement */}
-      <Box w="100%" py={4} textAlign="center" borderTop="1px solid #CBD5E0">
-        <Flex justify="center" align="center" gap={8}>
-          <img src="/Logo.png" alt="Funder Logo" style={{ maxHeight: "90px" }} />
-        </Flex>
-      </Box>
-    </Flex>
+      {/* Footer: Logos */}
+      <Grid
+        templateColumns="repeat(3, 1fr)"
+        gap={4}
+        pt={2}
+        w="100%"
+        borderTop="1px solid #CBD5E0"
+        bg="white"
+        py={4}
+        px={6}
+        borderRadius="md"
+      >
+        {[
+          "/BMBF_Logo.svg",
+          "/INIT_Logo.png",
+          "/KI_Akademie_OWL_Logo-Banner.png",
+        ].map((src, idx) => (
+          <Box
+            key={idx}
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Image src={src} alt={`Logo ${idx + 1}`} maxH="100px" />
+          </Box>
+        ))}
+      </Grid>
+    </VStack>
   );
 }
 
 const formatTime = (s) => {
   const m = Math.floor(s / 60).toString().padStart(2, "0");
-  const sec = (s % 60).toString().padStart(2, "0");
+  const sec = Math.floor(s % 60).toString().padStart(2, "0");
   return `${m}:${sec}`;
 };
 
