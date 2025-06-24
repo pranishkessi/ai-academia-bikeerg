@@ -33,7 +33,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
     { label: "LLM (ChatGPT response)", threshold: 0.008 },
   ];
 
-  const { message, clearMessage } = useAvatarMessages({
+  const { message, clearMessage, testSetMessage } = useAvatarMessages({
     energy,
     elapsedTime: time,
     sessionActive,
@@ -43,7 +43,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
   return (
     <VStack spacing={4} w="100vw" h="100vh" p={4} bg="#cbdfe6">
       {/* Top Metrics & Controls */}
-      <Grid templateColumns="repeat(8, 1fr)" gap={4} w="100%">
+      <Grid templateColumns="repeat(9, 1fr)" gap={4} w="100%">
         {/* Start/Stop + Language */}
         <GridItem colSpan={1}>
             <VStack spacing={4} align="start">
@@ -113,11 +113,51 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
             <Heading size="sm" color="gray.600">
               {item.label}
             </Heading>
-            <Text mt={2} fontWeight="bold" fontSize="lg">
+            <Box mt={2} fontWeight="bold" fontSize="lg">
               {item.value}
-            </Text>
+            </Box>
           </GridItem>
         ))}
+        <GridItem>
+          <VStack spacing={2} align="stretch">
+            <Button
+              size="sm"
+              colorScheme="blue"
+              onClick={() =>
+                testSetMessage({ type: "toast", text: "🚀 Session started (test)" })
+              }
+            >
+              Test Toast
+            </Button>
+            <Button
+              size="sm"
+              colorScheme="teal"
+              onClick={() => {
+                const unlockedTasks = [
+                  { threshold: 0.002, label: "Simple Google search query" },
+                  { threshold: 0.007, label: "Local image or sound recognition" },
+                  { threshold: 0.03, label: "Speech-to-text transcription" },
+                  { threshold: 0.05, label: "LLM (ChatGPT response)" },
+                ];
+                const task = unlockedTasks[Math.floor(Math.random() * unlockedTasks.length)];
+                testSetMessage({ type: "bubble", text: `Nice! You just unlocked "${task.label}" 🔓` });
+              }}
+
+            >
+              Test Bubble
+            </Button>
+            <Button
+              size="sm"
+              colorScheme="purple"
+              onClick={() =>
+                testSetMessage({ type: "float", text: "💪 Keep going!" })
+              }
+            >
+              Test Floating
+            </Button>
+          </VStack>
+      </GridItem>
+
       </Grid>
 
       {/* Main Dashboard: 70-30 Split */}
