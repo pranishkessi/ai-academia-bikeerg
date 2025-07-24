@@ -1,83 +1,85 @@
 // src/components/AvatarChatMessage.jsx
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Box, Text, useToast } from "@chakra-ui/react";
-import { motion, AnimatePresence } from "framer-motion";
+import bubbleImage from "/speech_bubble_3.svg"; // adjust if needed
 
-const MotionBox = motion(Box);
-
-function AvatarChatMessage({ message, onClear }) {
+const AvatarChatMessage = ({ message, onClear }) => {
   const toast = useToast();
-  const [showTyping, setShowTyping] = useState(false);
-  const [visibleMessage, setVisibleMessage] = useState(null);
 
-  // Toast logic
-  useEffect(() => {
-    if (message?.type === "toast" && message.text) {
+  // Show toast only once
+  React.useEffect(() => {
+    if (message?.type === "toast") {
       toast({
         title: message.text,
         status: "info",
         duration: 3000,
         isClosable: true,
-        position: "bottom",
+        position: "bottom-center",
       });
-      onClear();
+      if (onClear) onClear();
     }
   }, [message, toast, onClear]);
 
-  // Bubble + float logic
-  useEffect(() => {
-    if (!message || message.type === "toast") return;
-
-    setShowTyping(false);
-    setVisibleMessage(null);
-
-    if (message.type === "bubble") {
-      setShowTyping(true);
-      const typingTimer = setTimeout(() => {
-        setShowTyping(false);
-        setVisibleMessage(message.text);
-        const clearTimer = setTimeout(() => {
-          onClear();
-        }, 4000);
-        return () => clearTimeout(clearTimer);
-      }, 1500);
-      return () => clearTimeout(typingTimer);
-    }
-
-    if (message.type === "float") {
-      setVisibleMessage(message.text);
-      const timer = setTimeout(() => onClear(), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [message, onClear]);
-
-  if (!message || (!showTyping && !visibleMessage)) return null;
-
-  return (
-    <AnimatePresence>
-      <MotionBox
-        key="chat-box"
-        position="relative"
-        width="100%"
-        bg="blue.100"
-        borderRadius="xl"
-        px={6}
-        py={4}
-        textAlign="center"
-        fontSize="xl"
-        fontWeight="bold"
-        color="gray.800"
-        boxShadow="lg"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.3 }}
+  // Bubble SVG
+  if (message?.type === "bubble") {
+    return (
+      <Box
+        position="absolute"
+        top="-220px"
+        left="50%"
+        transform="translateX(-50%)"
+        width="480px"
+        height="360px"
+        backgroundImage={`url(${bubbleImage})`}
+        backgroundSize="contain"
+        backgroundRepeat="no-repeat"
+        backgroundPosition="center"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        px={4}
+        py={3}
+        zIndex={10}
       >
-        <Text>{showTyping ? "..." : visibleMessage}</Text>
-      </MotionBox>
-    </AnimatePresence>
-  );
-}
+        <Text
+          fontSize="md"
+          fontWeight="bold"
+          textAlign="center"
+          maxWidth="260px"
+          wordBreak="break-word"
+          lineHeight="short"
+          mt="8px"
+        >
+          {message.text}
+        </Text>
+      </Box>
+    );
+  }
+
+  // Floating style
+  if (message?.type === "float") {
+    return (
+      <Box
+        position="absolute"
+        top="-30px"
+        right="40%"
+        bg="blue.100"
+        px={6}
+        py={2}
+        borderRadius="md"
+        boxShadow="lg"
+        zIndex={10}
+        animation="floatFade 0.5s ease"
+      >
+        <Text fontSize="md" fontWeight="semibold">
+          {message.text}
+        </Text>
+      </Box>
+    );
+  }
+
+  return null;
+};
 
 export default AvatarChatMessage;

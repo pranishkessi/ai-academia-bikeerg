@@ -11,3 +11,14 @@ body, #root {
 html {
   font-size: clamp(14px, 1.2vw, 18px);
 }
+
+@keyframes floatFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

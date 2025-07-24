@@ -2,7 +2,8 @@ import asyncio
 from datetime import datetime
 from bleak import BleakScanner, BleakClient
 
-UUID_0036 = "ce060036-43e5-11e4-916c-0800200c9a66"
+UUID_0036 = "ce060036-43e5-11e4-916c-0800200c9a66"  # Notify characteristic
+UUID_WRITE = "ce060034-43e5-11e4-916c-0800200c9a66"  # Write characteristic
 
 ble_state = {
     "power": 0,
@@ -46,29 +47,56 @@ def notification_handler(_, data):
     else:
         ble_state["cadence"] = 0.0
 
+def build_sleep_command(doze_sec=0, sleep_sec=65535):
+    doze_hi, doze_lo = (doze_sec >> 8) & 0xFF, doze_sec & 0xFF
+    sleep_hi, sleep_lo = (sleep_sec >> 8) & 0xFF, sleep_sec & 0xFF
+    body = [0x21, doze_hi, doze_lo, sleep_hi, sleep_lo, 0, 0, 0, 0]
+    length = len(body)
+    frame = [0xF0, length] + body + [0xF2]
+    return bytearray(frame)
+
 async def ble_logger():
     global _start_time
+    retry_timeout = 300  # 5 minutes
+    retry_start = datetime.now().timestamp()
+
     while True:
         if not ble_state["session_active"]:
             await asyncio.sleep(1)
             continue
 
         try:
-            devices = await BleakScanner.discover(timeout=5.0)
-            pm5 = next((d for d in devices if "PM5" in d.name or "Concept2" in d.name), None)
-            if not pm5:
-                print("❌ PM5 not found.")
-                ble_state["connected"] = False
-                await asyncio.sleep(3)
-                continue
+            # Retry PM5 discovery
+            while True:
+                print("🔍 Scanning for PM5...")
+                devices = await BleakScanner.discover(timeout=5.0)
+                pm5 = next((d for d in devices if "PM5" in d.name or "Concept2" in d.name), None)
+
+                if pm5:
+                    break
+
+                elapsed = datetime.now().timestamp() - retry_start
+                if elapsed > retry_timeout:
+                    print("❌ Timed out waiting for PM5 to advertise. Restarting retry loop.")
+                    retry_start = datetime.now().timestamp()
+                    await asyncio.sleep(10)
+                    continue
+
+                print("⏳ PM5 not found. Retrying in 10s...")
+                await asyncio.sleep(10)
 
             print(f"✅ Found PM5: {pm5.name} [{pm5.address}]")
+
             async with BleakClient(pm5.address) as client:
                 await client.start_notify(UUID_0036, notification_handler)
                 print("🔗 Connected to PM5 BLE")
                 ble_state["connected"] = True
 
-                # Reset metrics when session starts
+                # 🛌 Extend PM5 sleep timeout
+                sleep_cmd = build_sleep_command()
+                await client.write_gatt_char(UUID_WRITE, sleep_cmd)
+                print("🛌 PM5 sleep timeout extended to 18.2 hours.")
+
                 _start_time = datetime.now().timestamp()
                 ble_state.update({
                     "elapsed": 0,
@@ -89,4 +117,4 @@ async def ble_logger():
         except Exception as e:
             print(f"⚠️ BLE logger error: {e}")
             ble_state["connected"] = False
-            await asyncio.sleep(2)
+            await asyncio.sleep(5)
