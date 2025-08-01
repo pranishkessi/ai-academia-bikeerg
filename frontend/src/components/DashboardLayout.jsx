@@ -86,7 +86,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
         {/* Metrics */}
         {[
           { label: "Power", value: `${power} W` },
-          { label: "Stroke", value: `${stroke} SPM` },
+          { label: "Stroke", value: `${stroke} RPM` },
           { label: "Distance", value: `${distance} m` },
           { label: "Time", value: formatTime(time) },
           { label: "Energy", value: `${energy.toFixed(4)} kWh` },
@@ -101,7 +101,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
         ].map((item, idx) => (
           <GridItem
             key={idx}
-            p={3}
+            p={1}
             bg="white"
             borderRadius="md"
             textAlign="center"
@@ -113,7 +113,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
             <Heading size="sm" color="gray.600">
               {item.label}
             </Heading>
-            <Box mt={2} fontWeight="bold" fontSize="lg">
+            <Box mt={1} fontWeight="bold" fontSize="lg">
               {item.value}
             </Box>
           </GridItem>
@@ -224,7 +224,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
 
       {/* Footer: Logos */}
       <Grid
-        templateColumns="repeat(3, 1fr)"
+        templateColumns="repeat(4, 1fr)"
         gap={4}
         pt={2}
         w="100%"
@@ -235,9 +235,10 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
         borderRadius="md"
       >
         {[
-          "/BMBF_Logo.svg",
+          "/BMFTR_Logo2.png",
           "/INIT_Logo.png",
-          "/KI_Akademie_OWL_Logo-Banner.png",
+          "/KI_Akademie_OWL_Logo.jpg",
+          "/visual.png",
         ].map((src, idx) => (
           <Box
             key={idx}
@@ -245,7 +246,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
             justifyContent="center"
             alignItems="center"
           >
-            <Image src={src} alt={`Logo ${idx + 1}`} maxH="100px" />
+            <Image src={src} alt={`Logo ${idx + 1}`} maxH="130px" />
           </Box>
         ))}
       </Grid>
