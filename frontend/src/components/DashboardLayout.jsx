@@ -14,7 +14,8 @@ import {
 } from "@chakra-ui/react";
 import SpeedometerChart from "./SpeedometerChart";
 import LineChartLive from "./LineChartLive";
-import TaskUnlockList from "./TaskUnlockList";
+import AITaskImageGrid from "./AITaskImageGrid";
+// import TaskUnlockList from "./TaskUnlockList";
 import AvatarDisplay from "./AvatarDisplay";
 import { useAvatarMessages } from "../hooks/useAvatarMessages";
 
@@ -197,7 +198,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
               align="flex-start"
               justify="flex-start"
             >
-              <TaskUnlockList energy={energy} />
+              <AITaskImageGrid energy={energy} />
             </Flex>
           </Grid>
         </GridItem>

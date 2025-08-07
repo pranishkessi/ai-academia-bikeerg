@@ -60,6 +60,7 @@ def notification_handler(_, data):
         avg_interval = sum(_stroke_intervals) / len(_stroke_intervals)
         ble_state["cadence"] = round(60 / avg_interval, 1)
     else:
+       
         ble_state["cadence"] = 0.0
 
 def build_sleep_command(doze_sec=0, sleep_sec=65535):

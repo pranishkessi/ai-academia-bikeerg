@@ -18,7 +18,7 @@
     "axios": "^1.8.3",
     "canvas-confetti": "^1.9.3",
     "chart.js": "^4.4.8",
-    "framer-motion": "^10.16.1",
+    "framer-motion": "^10.18.0",
     "lottie-react": "^2.4.1",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.3.0",
