@@ -15,7 +15,6 @@ import {
 import SpeedometerChart from "./SpeedometerChart";
 import LineChartLive from "./LineChartLive";
 import AITaskImageGrid from "./AITaskImageGrid";
-// import TaskUnlockList from "./TaskUnlockList";
 import AvatarDisplay from "./AvatarDisplay";
 import { useAvatarMessages } from "../hooks/useAvatarMessages";
 
@@ -28,13 +27,13 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
   const status = metrics?.connected ? "Connected" : "Not Connected";
 
   const unlockedTasks = [
-    { label: "Simple Google search query", threshold: 0.002 },
+    { label: "Einfache Google-Suche", threshold: 0.002 },
     { label: "Sound recognition", threshold: 0.004 },
     { label: "Speech-to-text transcription", threshold: 0.006 },
     { label: "LLM (ChatGPT response)", threshold: 0.008 },
   ];
 
-  const { message, clearMessage, testSetMessage } = useAvatarMessages({
+  const { message } = useAvatarMessages({
     energy,
     elapsedTime: time,
     sessionActive,
@@ -47,41 +46,40 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
       <Grid templateColumns="repeat(9, 1fr)" gap={4} w="100%">
         {/* Start/Stop + Language */}
         <GridItem colSpan={1}>
-            <VStack spacing={4} align="start">
-              <HStack spacing={4}>
-                <Button
-                  onClick={onStart}
-                  bg="green.500"
-                  color="white"
-                  borderRadius="full"
-                  height="120px"
-                  width="120px"
-                  fontSize="md"
-                  fontWeight="bold"
-                  _hover={{ bg: "green.600" }}
-                >
-                  START
-                </Button>
-                <Button
-                  onClick={onStop}
-                  bg="red.500"
-                  color="white"
-                  borderRadius="full"
-                  height="120px"
-                  width="120px"
-                  fontSize="md"
-                  fontWeight="bold"
-                  _hover={{ bg: "red.600" }}
-                >
-                  STOP
-                </Button>
-              </HStack>
-              <HStack spacing={4} pt={4}>
-                <Button size="sm">DE</Button>
-                <Button size="sm">EN</Button>
-              </HStack>
-            </VStack>
-
+          <VStack spacing={4} align="start">
+            <HStack spacing={4}>
+              <Button
+                onClick={onStart}
+                bg="green.500"
+                color="white"
+                borderRadius="full"
+                height="120px"
+                width="120px"
+                fontSize="md"
+                fontWeight="bold"
+                _hover={{ bg: "green.600" }}
+              >
+                START
+              </Button>
+              <Button
+                onClick={onStop}
+                bg="red.500"
+                color="white"
+                borderRadius="full"
+                height="120px"
+                width="120px"
+                fontSize="md"
+                fontWeight="bold"
+                _hover={{ bg: "red.600" }}
+              >
+                STOP
+              </Button>
+            </HStack>
+            <HStack spacing={4} pt={4}>
+              <Button size="sm">DE</Button>
+              <Button size="sm">EN</Button>
+            </HStack>
+          </VStack>
         </GridItem>
 
         {/* Metrics */}
@@ -119,46 +117,8 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
             </Box>
           </GridItem>
         ))}
-        <GridItem>
-          <VStack spacing={2} align="stretch">
-            <Button
-              size="sm"
-              colorScheme="blue"
-              onClick={() =>
-                testSetMessage({ type: "toast", text: "🚀 Session started (test)" })
-              }
-            >
-              Test Toast
-            </Button>
-            <Button
-              size="sm"
-              colorScheme="teal"
-              onClick={() => {
-                const unlockedTasks = [
-                  { threshold: 0.002, label: "Simple Google search query" },
-                  { threshold: 0.007, label: "Local image or sound recognition" },
-                  { threshold: 0.03, label: "Speech-to-text transcription" },
-                  { threshold: 0.05, label: "LLM (ChatGPT response)" },
-                ];
-                const task = unlockedTasks[Math.floor(Math.random() * unlockedTasks.length)];
-                testSetMessage({ type: "bubble", text: `Nice! You just unlocked "${task.label}" 🔓` });
-              }}
-
-            >
-              Test Bubble
-            </Button>
-            <Button
-              size="sm"
-              colorScheme="purple"
-              onClick={() =>
-                testSetMessage({ type: "float", text: "💪 Keep going!" })
-              }
-            >
-              Test Floating
-            </Button>
-          </VStack>
-      </GridItem>
-
+        {/* Rightmost column was used for test buttons — now unused */}
+        <GridItem />
       </Grid>
 
       {/* Main Dashboard: 70-30 Split */}
@@ -166,38 +126,18 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
         {/* LEFT (70%) */}
         <GridItem>
           <Grid templateRows="1fr 1fr" gap={4} h="100%">
-            {/* Speedometer + Chart (centered content) */}
+            {/* Speedometer + Chart */}
             <Grid templateColumns="1fr 1fr" gap={4}>
-              <Flex
-                p={4}
-                bg="#cae8eb"
-                borderRadius="md"
-                boxShadow="md"
-                justify="center"
-                align="center"
-              >
+              <Flex p={4} bg="#cae8eb" borderRadius="md" boxShadow="md" justify="center" align="center">
                 <SpeedometerChart energy={energy} />
               </Flex>
-              <Flex
-                p={4}
-                bg="#cae8eb"
-                borderRadius="md"
-                boxShadow="md"
-                height="100%"
-              >
+              <Flex p={4} bg="#cae8eb" borderRadius="md" boxShadow="md" height="100%">
                 <LineChartLive power={power} stroke={stroke} />
               </Flex>
             </Grid>
 
-            {/* Tasks (centered vertically) */}
-            <Flex
-              p={4}
-              bg="#cae8eb"
-              borderRadius="md"
-              boxShadow="md"
-              align="flex-start"
-              justify="flex-start"
-            >
+            {/* Tasks */}
+            <Flex p={4} bg="#cae8eb" borderRadius="md" boxShadow="md" align="flex-start" justify="flex-start">
               <AITaskImageGrid energy={energy} />
             </Flex>
           </Grid>
@@ -217,8 +157,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
             alignItems="center"
             position="relative"
           >
-            {/* Avatar w/ Message Bubble (handled inside AvatarDisplay) */}
-            <AvatarDisplay message={message} onClear={clearMessage} />
+            <AvatarDisplay message={message} />
           </Box>
         </GridItem>
       </Grid>
@@ -235,18 +174,8 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
         px={6}
         borderRadius="md"
       >
-        {[
-          "/BMFTR_Logo2.png",
-          "/INIT_Logo.png",
-          "/KI_Akademie_OWL_Logo.jpg",
-          "/visual.png",
-        ].map((src, idx) => (
-          <Box
-            key={idx}
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-          >
+        {["/BMFTR_Logo2.png", "/INIT_Logo.png", "/KI_Akademie_OWL_Logo.jpg", "/visual.png"].map((src, idx) => (
+          <Box key={idx} display="flex" justifyContent="center" alignItems="center">
             <Image src={src} alt={`Logo ${idx + 1}`} maxH="130px" />
           </Box>
         ))}

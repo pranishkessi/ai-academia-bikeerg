@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import Lottie from "lottie-react";
-import { Box, VStack } from "@chakra-ui/react";
-import AvatarChatMessage from "./AvatarChatMessage";
+import { Box } from "@chakra-ui/react";
+import AvatarMessageBox from "./AvatarMessageBox";
 
-const AvatarDisplay = ({ message, onClear }) => {
+const AvatarDisplay = ({ message }) => {
   const [animationData, setAnimationData] = useState(null);
 
   useEffect(() => {
@@ -29,32 +29,28 @@ const AvatarDisplay = ({ message, onClear }) => {
       position="relative"
       overflow="visible"
     >
-      {/* 🔵 Fixed-position chat panel */}
+      {/* Unified Message Box ABOVE the avatar */}
       <Box
         position="absolute"
         top="0"
         width="100%"
-        px={4}
+        px={2}
         pt={2}
         display="flex"
         justifyContent="center"
         zIndex={10}
       >
-        <AvatarChatMessage message={message} onClear={onClear} />
+        <AvatarMessageBox text={message?.text} kind={message?.kind || "default"} />
       </Box>
 
-      {/* 🤖 Avatar */}
+      {/* Avatar */}
       {animationData && (
-        <Box width="100%" maxWidth="680px">
+        <Box width="100%" maxWidth="520px">
           <Lottie
             animationData={animationData}
             loop
             autoplay
-            style={{
-              width: "100%",
-              height: "100%",
-              background: "transparent",
-            }}
+            style={{ width: "100%", height: "100%", background: "transparent" }}
           />
         </Box>
       )}
