@@ -1,5 +1,5 @@
 // src/components/DashboardLayout.jsx
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -19,6 +19,9 @@ import AvatarDisplay from "./AvatarDisplay";
 import { useAvatarMessages } from "../hooks/useAvatarMessages";
 
 function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
+  // ────────────────────────────────────────────────────────────────────────────
+  // Live metrics (props from parent)
+  // ────────────────────────────────────────────────────────────────────────────
   const energy = metrics?.energy_kwh || 0;
   const power = metrics?.power_watts || 0;
   const stroke = metrics?.stroke_rate || 0;
@@ -26,6 +29,19 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
   const time = metrics?.elapsed_time || 0;
   const status = metrics?.connected ? "Connected" : "Not Connected";
 
+  // ────────────────────────────────────────────────────────────────────────────
+  // Tunables
+  // ────────────────────────────────────────────────────────────────────────────
+  const TASK_THRESHOLDS = [0.002, 0.004, 0.006, 0.008]; // kWh
+  const FINAL_UNLOCK_DELAY_MS = 2500;                    // debounce before auto-end
+  const IDLE_LIMIT_SEC = 60;                             // end after 60s idle
+  const WARNING_BEFORE_END_SEC = 10;                     // 10→0 countdown
+  const SESSION_START_GRACE_SEC = 5;                     // ignore idle for first 5s
+  const MIN_ACTIVE_POWER = 3;                            // filter watt noise
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Avatar messages
+  // ────────────────────────────────────────────────────────────────────────────
   const unlockedTasks = [
     { label: "Einfache Google-Suche", threshold: 0.002 },
     { label: "Sound recognition", threshold: 0.004 },
@@ -40,6 +56,154 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
     unlockedTasks,
   });
 
+  // High-priority override for warnings/completion notes
+  const [overrideMessage, setOverrideMessage] = useState(null);
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Refs & local state for guards and timers
+  // ────────────────────────────────────────────────────────────────────────────
+  const allUnlockedRef = useRef(false);
+  const finalUnlockTimerRef = useRef(null);
+
+  const lastActiveRef = useRef(Date.now());
+  const idleTickerRef = useRef(null);
+  const infoTimeoutRef = useRef(null);
+
+  const onStopRef = useRef(onStop);             // <— keep callback stable
+  useEffect(() => { onStopRef.current = onStop; }, [onStop]);
+
+  const [idleSeconds, setIdleSeconds] = useState(0);
+  const [idleCountdown, setIdleCountdown] = useState(null);
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Reset idle machinery and show a tiny "started" note on (re)start
+  // ────────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (sessionActive) {
+      lastActiveRef.current = Date.now();
+      setIdleSeconds(0);
+      setIdleCountdown(null);
+      setOverrideMessage(null);
+
+      clearTimeout(infoTimeoutRef.current);
+      setOverrideMessage({ kind: "info", text: "Session started — let’s roll 🚴" });
+      infoTimeoutRef.current = setTimeout(() => setOverrideMessage(null), 1500);
+    }
+    return () => {
+      clearTimeout(infoTimeoutRef.current);
+    };
+  }, [sessionActive]);
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Activity detector — refresh lastActive when power/stroke show motion
+  // ────────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!sessionActive) return;
+
+    const isActiveNow = (power ?? 0) > MIN_ACTIVE_POWER || (stroke ?? 0) > 0;
+    if (isActiveNow) {
+      lastActiveRef.current = Date.now();
+
+      // If countdown/warning was visible, cancel it and show a brief info
+      if (idleCountdown !== null || overrideMessage?.kind === "warning") {
+        setIdleCountdown(null);
+        setOverrideMessage({ kind: "info", text: "Nice! Countdown cancelled — keep going 🚴" });
+        clearTimeout(infoTimeoutRef.current);
+        infoTimeoutRef.current = setTimeout(() => setOverrideMessage(null), 2000);
+      }
+    }
+  }, [power, stroke, sessionActive, idleCountdown, overrideMessage]);
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Idle ticker (1s) — 5s grace → warn at 50s → end at 60s
+  // NOTE: depends ONLY on sessionActive so we don't recreate every tick.
+  // ────────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!sessionActive) return;
+
+    clearInterval(idleTickerRef.current);
+    idleTickerRef.current = setInterval(() => {
+      const idleSec = Math.floor((Date.now() - lastActiveRef.current) / 1000);
+      setIdleSeconds(idleSec);
+
+      // Grace window right after session start
+      if (idleSec < SESSION_START_GRACE_SEC) {
+        if (idleCountdown !== null) setIdleCountdown(null);
+        if (overrideMessage?.kind === "warning") setOverrideMessage(null);
+        return;
+      }
+
+      const warnAt = IDLE_LIMIT_SEC - WARNING_BEFORE_END_SEC; // e.g., 50
+      if (idleSec >= warnAt && idleSec < IDLE_LIMIT_SEC) {
+        const remaining = IDLE_LIMIT_SEC - idleSec; // 10..1
+        if (idleCountdown !== remaining) setIdleCountdown(remaining);
+        setOverrideMessage({
+          kind: "warning",
+          text: `Are you there?\nKeep pedaling or the session will end in ${remaining} second${remaining === 1 ? "" : "s"}…`,
+        });
+      } else if (idleSec >= IDLE_LIMIT_SEC) {
+        setIdleCountdown(null);
+        setOverrideMessage(null);
+        onStopRef.current && onStopRef.current({ reason: "idle-timeout" });
+      } else {
+        // Below warning threshold → hide any warning
+        if (idleCountdown !== null) setIdleCountdown(null);
+        if (overrideMessage?.kind === "warning") setOverrideMessage(null);
+      }
+    }, 1000);
+
+    return () => clearInterval(idleTickerRef.current);
+  }, [sessionActive]); // ⬅ keep deps minimal
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // [AUTO-END FINAL THRESHOLDS] — stop once all 4 thresholds are met
+  // IMPORTANT: do NOT clear the timeout on energy changes (that was the bug).
+  // ────────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!sessionActive) return;
+
+    const unlocked = TASK_THRESHOLDS.filter((t) => energy >= t).length;
+    if (unlocked === TASK_THRESHOLDS.length && !allUnlockedRef.current) {
+      allUnlockedRef.current = true;
+
+      setOverrideMessage({
+        kind: "success",
+        text: "All AI tasks unlocked — amazing! 🎉 Ending session…",
+      });
+
+      // Schedule the stop once — do not cancel if energy keeps updating.
+      clearTimeout(finalUnlockTimerRef.current);
+      finalUnlockTimerRef.current = setTimeout(() => {
+        setOverrideMessage(null);
+        onStopRef.current && onStopRef.current({ reason: "completed" });
+      }, FINAL_UNLOCK_DELAY_MS);
+    }
+    // NOTE: no cleanup here on purpose.
+  }, [energy, sessionActive]);
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Cleanup when session stops or component unmounts
+  // ────────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!sessionActive) {
+      allUnlockedRef.current = false;
+      setOverrideMessage(null);
+      setIdleCountdown(null);
+      setIdleSeconds(0);
+      clearInterval(idleTickerRef.current);
+      clearTimeout(finalUnlockTimerRef.current);
+      clearTimeout(infoTimeoutRef.current);
+    }
+    return () => {
+      clearInterval(idleTickerRef.current);
+      clearTimeout(finalUnlockTimerRef.current);
+      clearTimeout(infoTimeoutRef.current);
+    };
+  }, [sessionActive]);
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Render
+  // ────────────────────────────────────────────────────────────────────────────
   return (
     <VStack spacing={4} w="100vw" h="100vh" p={4} bg="#cbdfe6">
       {/* Top Metrics & Controls */}
@@ -50,6 +214,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
             <HStack spacing={4}>
               <Button
                 onClick={onStart}
+                isDisabled={sessionActive}
                 bg="green.500"
                 color="white"
                 borderRadius="full"
@@ -62,7 +227,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
                 START
               </Button>
               <Button
-                onClick={onStop}
+                onClick={() => onStop && onStop({ reason: "manual" })}
                 bg="red.500"
                 color="white"
                 borderRadius="full"
@@ -117,7 +282,8 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
             </Box>
           </GridItem>
         ))}
-        {/* Rightmost column was used for test buttons — now unused */}
+
+        {/* Rightmost placeholder for balance */}
         <GridItem />
       </Grid>
 
@@ -128,16 +294,36 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
           <Grid templateRows="1fr 1fr" gap={4} h="100%">
             {/* Speedometer + Chart */}
             <Grid templateColumns="1fr 1fr" gap={4}>
-              <Flex p={4} bg="#cae8eb" borderRadius="md" boxShadow="md" justify="center" align="center">
+              <Flex
+                p={4}
+                bg="#cae8eb"
+                borderRadius="md"
+                boxShadow="md"
+                justify="center"
+                align="center"
+              >
                 <SpeedometerChart energy={energy} />
               </Flex>
-              <Flex p={4} bg="#cae8eb" borderRadius="md" boxShadow="md" height="100%">
+              <Flex
+                p={4}
+                bg="#cae8eb"
+                borderRadius="md"
+                boxShadow="md"
+                height="100%"
+              >
                 <LineChartLive power={power} stroke={stroke} />
               </Flex>
             </Grid>
 
             {/* Tasks */}
-            <Flex p={4} bg="#cae8eb" borderRadius="md" boxShadow="md" align="flex-start" justify="flex-start">
+            <Flex
+              p={4}
+              bg="#cae8eb"
+              borderRadius="md"
+              boxShadow="md"
+              align="flex-start"
+              justify="flex-start"
+            >
               <AITaskImageGrid energy={energy} />
             </Flex>
           </Grid>
@@ -157,7 +343,8 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
             alignItems="center"
             position="relative"
           >
-            <AvatarDisplay message={message} />
+            {/* overrideMessage takes priority over hook's message */}
+            <AvatarDisplay message={overrideMessage || message} />
           </Box>
         </GridItem>
       </Grid>
@@ -174,8 +361,18 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
         px={6}
         borderRadius="md"
       >
-        {["/BMFTR_Logo2.png", "/INIT_Logo.png", "/KI_Akademie_OWL_Logo.jpg", "/visual.png"].map((src, idx) => (
-          <Box key={idx} display="flex" justifyContent="center" alignItems="center">
+        {[
+          "/BMFTR_Logo2.png",
+          "/INIT_Logo.png",
+          "/KI_Akademie_OWL_Logo.jpg",
+          "/visual.png",
+        ].map((src, idx) => (
+          <Box
+            key={idx}
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+          >
             <Image src={src} alt={`Logo ${idx + 1}`} maxH="130px" />
           </Box>
         ))}
