@@ -43,10 +43,10 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
   // Avatar messages
   // ────────────────────────────────────────────────────────────────────────────
   const unlockedTasks = [
-    { label: "Einfache Google-Suche", threshold: 0.002 },
-    { label: "Sound recognition", threshold: 0.004 },
-    { label: "Speech-to-text transcription", threshold: 0.006 },
-    { label: "LLM (ChatGPT response)", threshold: 0.008 },
+    { label: "6 Google-Suchanfragen", threshold: 0.002 },
+    { label: "Bilderkennung", threshold: 0.004 },
+    { label: "20 ChatGpt-Abfragen", threshold: 0.006 },
+    { label: "Text zu Audio", threshold: 0.008 },
   ];
 
   const { message } = useAvatarMessages({
@@ -107,7 +107,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
       // If countdown/warning was visible, cancel it and show a brief info
       if (idleCountdown !== null || overrideMessage?.kind === "warning") {
         setIdleCountdown(null);
-        setOverrideMessage({ kind: "info", text: "Nice! Countdown cancelled — keep going 🚴" });
+        setOverrideMessage({ kind: "info", text: "Toll! Countdown abgebrochen — weiter geht‘s" });
         clearTimeout(infoTimeoutRef.current);
         infoTimeoutRef.current = setTimeout(() => setOverrideMessage(null), 2000);
       }
@@ -139,7 +139,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
         if (idleCountdown !== remaining) setIdleCountdown(remaining);
         setOverrideMessage({
           kind: "warning",
-          text: `Are you there?\nKeep pedaling or the session will end in ${remaining} second${remaining === 1 ? "" : "s"}…`,
+          text: `Sind Sie da?\nTreten Sie weiter in die Pedale oder die Sitzung endet in ${remaining} Sekunde${remaining === 1 ? "" : "n"}…`,
         });
       } else if (idleSec >= IDLE_LIMIT_SEC) {
         setIdleCountdown(null);
@@ -168,7 +168,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
 
       setOverrideMessage({
         kind: "success",
-        text: "All AI tasks unlocked — amazing! 🎉 Ending session…",
+        text: "Erstaunlich! Sie haben alle KI-Aufgaben freigeschaltet. Jetzt endet die Sitzung automatisch",
       });
 
       // Schedule the stop once — do not cancel if energy keeps updating.
@@ -249,11 +249,11 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
 
         {/* Metrics */}
         {[
-          { label: "Power", value: `${power} W` },
-          { label: "Stroke", value: `${stroke} RPM` },
-          { label: "Distance", value: `${distance} m` },
-          { label: "Time", value: formatTime(time) },
-          { label: "Energy", value: `${energy.toFixed(4)} kWh` },
+          { label: "Leistung", value: `${power} W` },
+          { label: "Schlaganfall", value: `${stroke} RPM` },
+          { label: "Distanz", value: `${distance} m` },
+          { label: "Zeit", value: formatTime(time) },
+          { label: "Energie", value: `${energy.toFixed(4)} kWh` },
           {
             label: "Status",
             value: (
