@@ -1,5 +1,5 @@
 /* src/index.css */
-body, #root {
+html, body, #root {
   height: 100%;
   width: 100%;
   margin: 0;
@@ -8,17 +8,14 @@ body, #root {
   font-family: 'Segoe UI', Arial, sans-serif;
   background-color: #879599;
 }
-html {
-  font-size: clamp(14px, 1.2vw, 18px);
+
+html, body {
+  overscroll-behavior: none;
+  -ms-touch-action: none;
+  touch-action: none;  /* disables double-tap & pinch zoom helpers */
 }
 
 @keyframes floatFade {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

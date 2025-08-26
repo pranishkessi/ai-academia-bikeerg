@@ -1,5 +1,5 @@
 // src/components/DashboardLayout.jsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import {
   Box,
   Button,
@@ -11,41 +11,49 @@ import {
   Heading,
   Image,
   Flex,
+  IconButton,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalBody,
+  ModalCloseButton,
 } from "@chakra-ui/react";
+import { FaInfoCircle } from "react-icons/fa";
+
 import SpeedometerChart from "./SpeedometerChart";
 import LineChartLive from "./LineChartLive";
 import AITaskImageGrid from "./AITaskImageGrid";
 import AvatarDisplay from "./AvatarDisplay";
 import { useAvatarMessages } from "../hooks/useAvatarMessages";
 
+// New: idle screensaver + instruction content
+import useIdleTimer from "../hooks/useIdleTimer";
+import ScreensaverOverlay from "./ScreensaverOverlay";
+import InstructionContent from "./InstructionContent";
+
 function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
-  // ────────────────────────────────────────────────────────────────────────────
   // Live metrics (props from parent)
-  // ────────────────────────────────────────────────────────────────────────────
-  const energy = metrics?.energy_kwh || 0;
-  const power = metrics?.power_watts || 0;
-  const stroke = metrics?.stroke_rate || 0;
-  const distance = metrics?.distance_meters || 0;
-  const time = metrics?.elapsed_time || 0;
-  const status = metrics?.connected ? "Connected" : "Not Connected";
+  const energy = metrics?.energy_kwh ?? 0;
+  const power = metrics?.power_watts ?? 0;
+  const stroke = metrics?.stroke_rate ?? 0;
+  const distance = metrics?.distance_meters ?? 0;
+  const time = metrics?.elapsed_time ?? 0;
+  const status = metrics?.connected ? "Verbunden" : "Nicht verbunden";
 
-  // ────────────────────────────────────────────────────────────────────────────
   // Tunables
-  // ────────────────────────────────────────────────────────────────────────────
   const TASK_THRESHOLDS = [0.002, 0.004, 0.006, 0.008]; // kWh
-  const FINAL_UNLOCK_DELAY_MS = 2500;                    // debounce before auto-end
-  const IDLE_LIMIT_SEC = 60;                             // end after 60s idle
-  const WARNING_BEFORE_END_SEC = 10;                     // 10→0 countdown
-  const SESSION_START_GRACE_SEC = 5;                     // ignore idle for first 5s
-  const MIN_ACTIVE_POWER = 3;                            // filter watt noise
+  const FINAL_UNLOCK_DELAY_MS = 2500; // debounce before auto-end
+  const IDLE_LIMIT_SEC = 60;          // end after 60s idle (session)
+  const WARNING_BEFORE_END_SEC = 10;  // 10→0 countdown
+  const SESSION_START_GRACE_SEC = 5;  // ignore idle for first 5s
+  const MIN_ACTIVE_POWER = 3;         // filter watt noise
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // Avatar messages
-  // ────────────────────────────────────────────────────────────────────────────
+  // Avatar messages (German labels)
   const unlockedTasks = [
     { label: "6 Google-Suchanfragen", threshold: 0.002 },
     { label: "Bilderkennung", threshold: 0.004 },
-    { label: "20 ChatGpt-Abfragen", threshold: 0.006 },
+    { label: "20 ChatGPT-Abfragen", threshold: 0.006 },
     { label: "Text zu Audio", threshold: 0.008 },
   ];
 
@@ -59,9 +67,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
   // High-priority override for warnings/completion notes
   const [overrideMessage, setOverrideMessage] = useState(null);
 
-  // ────────────────────────────────────────────────────────────────────────────
   // Refs & local state for guards and timers
-  // ────────────────────────────────────────────────────────────────────────────
   const allUnlockedRef = useRef(false);
   const finalUnlockTimerRef = useRef(null);
 
@@ -69,15 +75,13 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
   const idleTickerRef = useRef(null);
   const infoTimeoutRef = useRef(null);
 
-  const onStopRef = useRef(onStop);             // <— keep callback stable
+  const onStopRef = useRef(onStop);
   useEffect(() => { onStopRef.current = onStop; }, [onStop]);
 
   const [idleSeconds, setIdleSeconds] = useState(0);
   const [idleCountdown, setIdleCountdown] = useState(null);
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // Reset idle machinery and show a tiny "started" note on (re)start
-  // ────────────────────────────────────────────────────────────────────────────
+  // When session starts: reset idle and show quick info
   useEffect(() => {
     if (sessionActive) {
       lastActiveRef.current = Date.now();
@@ -86,7 +90,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
       setOverrideMessage(null);
 
       clearTimeout(infoTimeoutRef.current);
-      setOverrideMessage({ kind: "info", text: "Session started — let’s roll 🚴" });
+      setOverrideMessage({ kind: "info", text: "Sitzung gestartet — los geht’s 🚴" });
       infoTimeoutRef.current = setTimeout(() => setOverrideMessage(null), 1500);
     }
     return () => {
@@ -94,9 +98,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
     };
   }, [sessionActive]);
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // Activity detector — refresh lastActive when power/stroke show motion
-  // ────────────────────────────────────────────────────────────────────────────
+  // Activity detector — refresh lastActive when power/stroke move
   useEffect(() => {
     if (!sessionActive) return;
 
@@ -107,17 +109,14 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
       // If countdown/warning was visible, cancel it and show a brief info
       if (idleCountdown !== null || overrideMessage?.kind === "warning") {
         setIdleCountdown(null);
-        setOverrideMessage({ kind: "info", text: "Toll! Countdown abgebrochen — weiter geht‘s" });
+        setOverrideMessage({ kind: "info", text: "Toll! Countdown abgebrochen — weiter geht’s" });
         clearTimeout(infoTimeoutRef.current);
         infoTimeoutRef.current = setTimeout(() => setOverrideMessage(null), 2000);
       }
     }
   }, [power, stroke, sessionActive, idleCountdown, overrideMessage]);
 
-  // ────────────────────────────────────────────────────────────────────────────
   // Idle ticker (1s) — 5s grace → warn at 50s → end at 60s
-  // NOTE: depends ONLY on sessionActive so we don't recreate every tick.
-  // ────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!sessionActive) return;
 
@@ -153,12 +152,9 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
     }, 1000);
 
     return () => clearInterval(idleTickerRef.current);
-  }, [sessionActive]); // ⬅ keep deps minimal
+  }, [sessionActive]); // keep deps minimal
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // [AUTO-END FINAL THRESHOLDS] — stop once all 4 thresholds are met
-  // IMPORTANT: do NOT clear the timeout on energy changes (that was the bug).
-  // ────────────────────────────────────────────────────────────────────────────
+  // Auto-end once all 4 thresholds are met
   useEffect(() => {
     if (!sessionActive) return;
 
@@ -168,22 +164,19 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
 
       setOverrideMessage({
         kind: "success",
-        text: "Erstaunlich! Sie haben alle KI-Aufgaben freigeschaltet. Jetzt endet die Sitzung automatisch",
+        text: "Erstaunlich! Sie haben alle KI-Aufgaben freigeschaltet. Die Sitzung endet gleich automatisch.",
       });
 
-      // Schedule the stop once — do not cancel if energy keeps updating.
       clearTimeout(finalUnlockTimerRef.current);
       finalUnlockTimerRef.current = setTimeout(() => {
         setOverrideMessage(null);
         onStopRef.current && onStopRef.current({ reason: "completed" });
       }, FINAL_UNLOCK_DELAY_MS);
     }
-    // NOTE: no cleanup here on purpose.
+    // no cleanup: we want the stop to fire once
   }, [energy, sessionActive]);
 
-  // ────────────────────────────────────────────────────────────────────────────
   // Cleanup when session stops or component unmounts
-  // ────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!sessionActive) {
       allUnlockedRef.current = false;
@@ -201,14 +194,22 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
     };
   }, [sessionActive]);
 
-  // ────────────────────────────────────────────────────────────────────────────
+// Screensaver idle timer (UI inactivity)
+const { isIdle: isUiIdle, reset: resetUiIdle } = useIdleTimer({
+  timeoutMs: 10 * 60 * 1000,        // ✅ back to 10 minutes
+  isPaused: sessionActive, 
+});
+
+
+  // Anleitung modal
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   // Render
-  // ────────────────────────────────────────────────────────────────────────────
   return (
-    <VStack spacing={4} w="100vw" h="100vh" p={4} bg="#cbdfe6">
+    <VStack spacing={4} w="100vw" h="100vh" p={4} bg="#cbdfe6" overflow="hidden">
       {/* Top Metrics & Controls */}
       <Grid templateColumns="repeat(9, 1fr)" gap={4} w="100%">
-        {/* Start/Stop + Language */}
+        {/* Start/Stop + Anleitung */}
         <GridItem colSpan={1}>
           <VStack spacing={4} align="start">
             <HStack spacing={4}>
@@ -239,10 +240,12 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
               >
                 STOP
               </Button>
-            </HStack>
-            <HStack spacing={4} pt={4}>
-              <Button size="sm">DE</Button>
-              <Button size="sm">EN</Button>
+              <IconButton
+                aria-label="Anleitung"
+                title="Anleitung öffnen"
+                icon={<FaInfoCircle />}
+                onClick={onOpen}
+              />
             </HStack>
           </VStack>
         </GridItem>
@@ -250,7 +253,7 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
         {/* Metrics */}
         {[
           { label: "Leistung", value: `${power} W` },
-          { label: "Schlaganfall", value: `${stroke} RPM` },
+          { label: "Schlagfrequenz", value: `${stroke} SPM` },
           { label: "Distanz", value: `${distance} m` },
           { label: "Zeit", value: formatTime(time) },
           { label: "Energie", value: `${energy.toFixed(4)} kWh` },
@@ -377,7 +380,26 @@ function DashboardLayout({ metrics, onStart, onStop, sessionActive }) {
           </Box>
         ))}
       </Grid>
+
+      {/* Anleitung Modal (German only) */}
+      <Modal isOpen={isOpen} onClose={onClose} size="6xl">
+        <ModalOverlay />
+        <ModalContent rounded="2xl" p={2}>
+          <ModalCloseButton />
+          <ModalBody p={{ base: 4, md: 8 }}>
+            <InstructionContent lang="de" />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      {/* Screensaver Overlay: appears after 10 min of UI inactivity */}
+      <ScreensaverOverlay
+        isOpen={isUiIdle}
+        onDismiss={resetUiIdle}
+        lang="de"
+      />
     </VStack>
+    
   );
 }
 

@@ -10,25 +10,25 @@ const TASKS = [
     id: "google",
     threshold: 0.002,
     lockedImg: "/MYSTERY_1.1.png",
-    unlockedImg: "/MYSTERY_REVELED_1.png",
+    unlockedImg: "/Unlocked_1.png",
   },
   {
     id: "sound",
     threshold: 0.004,
     lockedImg: "/MYSTERY_2.2.png",
-    unlockedImg: "/MYSTERY_REVELED_2.png",
+    unlockedImg: "/Unlocked_2.png",
   },
   {
     id: "stt",
     threshold: 0.006,
     lockedImg: "/MYSTERY_3.3.png",
-    unlockedImg: "/MYSTERY_REVELED_1.png",
+    unlockedImg: "/Unlocked_3.png",
   },
   {
     id: "llm",
     threshold: 0.008,
     lockedImg: "/MYSTERY_4.4.png",
-    unlockedImg: "/MYSTERY_REVELED_2.png",
+    unlockedImg: "/Unlocked_4.png",
   },
 ];
 

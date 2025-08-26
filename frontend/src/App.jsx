@@ -25,6 +25,16 @@ function App() {
   const timeoutRef = useRef(null);
   const toast = useToast();
 
+  const dispatchAvatarTempMessage = (text, durationMs = 30000) => {
+    // Broadcast a temporary message for the avatar.
+    // useAvatarMessages.js listens for this event and will revert to Welcome after duration.
+    window.dispatchEvent(
+      new CustomEvent("avatar:tempMessage", {
+        detail: { text, duration: durationMs },
+      })
+    );
+  };
+
   const fetchData = async () => {
     try {
       const res = await axios.get("http://127.0.0.1:8080/data");
@@ -49,12 +59,24 @@ function App() {
         setIsRunning(false);
         if (closedManuallyRef.current) return;
 
-        if (
-          d.last_session_snapshot &&
-          d.last_session_snapshot.elapsed_time > 0
-        ) {
+        if (d.last_session_snapshot && d.last_session_snapshot.elapsed_time > 0) {
           setLastSession(d.last_session_snapshot);
           setShowSummary(true);
+
+          // Build the same message you show above the avatar
+          const unlocked =
+            [0.002, 0.004, 0.006, 0.008].filter(
+              (t) => d.last_session_snapshot.energy_kwh >= t
+            ).length;
+
+          const msg = `Session beendet. Energie: ${d.last_session_snapshot.energy_kwh.toFixed(
+            3
+          )} kWh • Aufgaben: ${unlocked} / 4`;
+
+          // Trigger avatar temp message for 30s, then it will auto-revert to Welcome
+          dispatchAvatarTempMessage(msg, 30000);
+
+          // Auto-hide the summary after 30s
           clearTimeout(timeoutRef.current);
           timeoutRef.current = setTimeout(() => {
             setShowSummary(false);
@@ -104,6 +126,7 @@ function App() {
       await axios.post("http://127.0.0.1:8080/stop");
       setIsRunning(false);
       setStatus("Inactive");
+      // The avatar temp message + summary timing will be handled in fetchData
     } catch (error) {
       console.error("Error stopping session:", error);
     }
@@ -159,24 +182,24 @@ function App() {
               </Box>
 
               <Text fontSize="xl" fontWeight="bold" mb={4} color="blue.700">
-                Session Summary
+                Sitzungszusammenfassung
               </Text>
 
               <VStack align="start" spacing={2}>
                 <Text>
-                  <Box as="span" fontWeight="bold">Elapsed Time:</Box>{" "}
+                  <Box as="span" fontWeight="bold">Verstrichene Zeit:</Box>{" "}
                   {formatTime(lastSession.elapsed_time)}
                 </Text>
                 <Text>
-                  <Box as="span" fontWeight="bold">Distance:</Box>{" "}
-                  {lastSession.distance_meters} m
+                  <Box as="span" fontWeight="bold">Distanz:</Box>{" "}
+                  {Math.round(lastSession.distance_meters)} m
                 </Text>
                 <Text>
-                  <Box as="span" fontWeight="bold">Energy:</Box>{" "}
+                  <Box as="span" fontWeight="bold">Energie:</Box>{" "}
                   {lastSession.energy_kwh.toFixed(4)} kWh
                 </Text>
                 <Text>
-                  <Box as="span" fontWeight="bold">Tasks Unlocked:</Box>{" "}
+                  <Box as="span" fontWeight="bold">KI-Aufgabe Freigeschaltet:</Box>{" "}
                   {[0.002, 0.004, 0.006, 0.008].filter(
                     (t) => lastSession.energy_kwh >= t
                   ).length} / 4
@@ -192,7 +215,7 @@ function App() {
 
 function formatTime(totalSeconds) {
   const mins = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
-  const secs = (totalSeconds % 60).toString().padStart(2, "0");
+  const secs = Math.floor(totalSeconds % 60).toString().padStart(2, "0");
   return `${mins}:${secs}`;
 }
 
