@@ -44,7 +44,7 @@ export function useAvatarMessages({ energy, elapsedTime, sessionActive, unlocked
       const unlockedCount = countUnlocked(finalEnergy);
       const totalTasks = UNLOCKS.length;
       setMessage({
-        text: `Session beendet. Energie: ${Number(finalEnergy).toFixed(3)} kWh • Aufgaben: ${unlockedCount} / ${totalTasks}`,
+        text: `Session beendet. Energie: ${Number(finalEnergy).toFixed(4)} kWh • Aufgaben: ${unlockedCount} / ${totalTasks}`,
         kind: "info",
       });
     }
