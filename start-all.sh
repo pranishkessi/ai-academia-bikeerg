@@ -1,9 +1,10 @@
-#!/bin/bash
-exec &> /home/pranish/ai-academia-bikeerg/manual-launch.log
-echo "📦 Manual launch started at $(date)"
-
 if [[ "$RUN_LOGGED" == "1" ]]; then
+  # Log only when running in kiosk/boot mode
   exec &> /home/pranish/ai-academia-bikeerg/boot.log
+  echo "🚀 Boot launch started at $(date)"
+else
+  # No logging at all for manual runs
+  echo "📦 Manual launch started at $(date) (no log file)"
 fi
 
 export DISPLAY=:0
