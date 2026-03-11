@@ -35,15 +35,27 @@ if [[ "$SKIP_CHROMIUM" == "1" ]]; then
 fi
 
 echo "🖥️ Launching Chromium browser in kiosk mode..."
-chromium --kiosk http://localhost:5173 \
+# Use a dedicated, clean profile so prompts don’t reappear
+mkdir -p /home/pranish/.config/chromium-kiosk
+
+chromium \
+  --kiosk "http://localhost:5173" \
+  --no-first-run \
+  --no-default-browser-check \
+  --noerrdialogs \
   --disable-background-networking \
   --disable-component-update \
   --disable-default-apps \
-  --noerrdialogs \
-  --no-first-run \
   --disable-infobars \
   --disable-session-crashed-bubble \
+  --disable-notifications \
+  --disable-geolocation \
   --disable-pinch \
   --overscroll-history-navigation=0 \
+  --password-store=basic \
+  --autoplay-policy=no-user-gesture-required \
   --force-device-scale-factor=0.9 \
+  --disable-features=Translate,PermissionQuietChip,QuieterPermission,NotificationTriggers,MediaRouter \
+  --user-data-dir=/home/pranish/.config/chromium-kiosk \
   >/dev/null 2>&1 &
+

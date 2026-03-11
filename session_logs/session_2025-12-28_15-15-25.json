@@ -1,0 +1,11 @@
+{
+  "elapsed_time": 301.3589353509997,
+  "distance_meters": 2380.525289733625,
+  "energy_kwh": 0.008,
+  "tasks_unlocked": [
+    "Google Search",
+    "Image/Sound Recognition",
+    "Speech-to-Text",
+    "LLM Inference"
+  ]
+}
