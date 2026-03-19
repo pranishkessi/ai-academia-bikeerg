@@ -1,4 +1,4 @@
-🚀 Boot launch started at So 1. Feb 09:51:29 CET 2026
+🚀 Boot launch started at Mi 18. Mär 11:45:29 CET 2026
 🐍 Activating Python virtual environment...
 🚀 Starting FastAPI backend...
 🌐 Starting Vite frontend...
@@ -6,11 +6,9 @@
 … frontend not up yet, retrying...
 … frontend not up yet, retrying...
 … frontend not up yet, retrying...
-… frontend not up yet, retrying...
 INFO:     Will watch for changes in these directories: ['/home/pranish/ai-academia-bikeerg']
 INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
-INFO:     Started reloader process [1780] using StatReload
-… frontend not up yet, retrying...
+INFO:     Started reloader process [2019] using StatReload
 … frontend not up yet, retrying...
 
 > frontend@0.0.0 dev
@@ -20,14 +18,22 @@ INFO:     Started reloader process [1780] using StatReload
 … frontend not up yet, retrying...
 … frontend not up yet, retrying...
 … frontend not up yet, retrying...
-
-  VITE v6.3.5  ready in 3626 ms
-
-  ➜  Local:   http://localhost:5173/
-  ➜  Network: use --host to expose
+error when starting dev server:
+Error: Port 5173 is already in use
+    at Server.onError (file:///home/pranish/ai-academia-bikeerg/frontend/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:25023:18)
+    at Server.emit (node:events:517:28)
+    at emitErrorNT (node:net:1844:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+✅ Frontend is now reachable.
+🖥️ SKIP_CHROMIUM=1 set → not launching browser here (systemd will do it).
 Changing power off succeeded
+[[0;93mCHG[0m] Controller 9C:B1:50:77:4E:9D Powered: no
+[[0;93mCHG[0m] Controller 9C:B1:50:77:4E:9D Discovering: no
+[[0;93mCHG[0m] Controller 9C:B1:50:77:4E:9D Class: 0x00000000
+[[0;93mCHG[0m] Controller 9C:B1:50:77:4E:9D Class: 0x006c0104
 Changing power on succeeded
-INFO:     Started server process [2021]
+[[0;93mCHG[0m] Controller 9C:B1:50:77:4E:9D Powered: yes
+INFO:     Started server process [2231]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 ERROR:    Traceback (most recent call last):
@@ -84,5 +90,3 @@ Traceback (most recent call last):
     sock.listen(self._backlog)
 OSError: [Errno 98] Address already in use
 ⏳ Initial boot delay 20s before starting BLE scan...
-✅ Frontend is now reachable.
-🖥️ SKIP_CHROMIUM=1 set → not launching browser here (systemd will do it).

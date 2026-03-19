@@ -1,0 +1,9 @@
+2026-03-19 15:35:13,850 - WARNING - Bluetooth not available yet: No powered Bluetooth adapters found.
+2026-03-19 15:35:13,904 - INFO - Bluetooth is available
+2026-03-19 15:35:13,951 - INFO - Current Shelly relay state: True
+2026-03-19 15:35:13,998 - INFO - Shelly relay turned OFF
+2026-03-19 15:35:17,908 - INFO - Bluetooth is available
+2026-03-19 15:35:17,953 - INFO - Current Shelly relay state: False
+2026-03-19 15:35:17,981 - INFO - Shelly relay turned OFF
+2026-03-19 15:35:44,062 - INFO - Shelly relay turned ON
+2026-03-19 15:35:48,043 - INFO - Shelly relay turned ON
