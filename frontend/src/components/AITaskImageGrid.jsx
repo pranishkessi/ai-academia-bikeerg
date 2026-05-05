@@ -1,77 +1,68 @@
 import React from "react";
-import { SimpleGrid, Box } from "@chakra-ui/react";
+import { HStack, Box } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
+import { AI_TASKS } from "../constants/aiTasks";
+import { THEME_COLORS } from "../constants/themeColors";
 
-const segmentColors = ["#A0AEC0", "#63B3ED", "#F6AD55", "#48BB78"];
+// const segmentColors = ["#A0AEC0", "#63B3ED", "#F6AD55", "#48BB78", "#805AD5", "#E53E3E"];
+const segmentColors = THEME_COLORS.taskBorders;
 
-const TASKS = [
-  {
-    id: "google",
-    threshold: 0.002,
-    lockedImg: "/MYSTERY_1.1.png",
-    unlockedImg: "/Unlocked_1.png",
-  },
-  {
-    id: "sound",
-    threshold: 0.004,
-    lockedImg: "/MYSTERY_2.2.png",
-    unlockedImg: "/Unlocked_2.png",
-  },
-  {
-    id: "stt",
-    threshold: 0.006,
-    lockedImg: "/MYSTERY_3.3.png",
-    unlockedImg: "/Unlocked_3.png",
-  },
-  {
-    id: "llm",
-    threshold: 0.008,
-    lockedImg: "/MYSTERY_4.4.png",
-    unlockedImg: "/Unlocked_4.png",
-  },
-];
+// Phase 6: use all 6 tasks
+const TASKS = AI_TASKS;
 
 function AITaskImageGrid({ energy }) {
-  const hasCelebrated = React.useRef([false, false, false, false]);
+  const hasCelebrated = React.useRef(Array(TASKS.length).fill(false));
 
   React.useEffect(() => {
     TASKS.forEach((task, idx) => {
-      if (
-        energy >= task.threshold &&
-        !hasCelebrated.current[idx]
-      ) {
+      if (energy >= task.threshold && !hasCelebrated.current[idx]) {
         hasCelebrated.current[idx] = true;
-        confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 }, scalar: 0.85 });
+        confetti({
+          particleCount: 70,
+          spread: 70,
+          origin: { y: 0.6 },
+          scalar: 0.85,
+        });
       }
     });
   }, [energy]);
 
   return (
-    <SimpleGrid columns={4} spacing={6} w="100%" py={2} minChildWidth="220px" maxH="220px" alignItems="start">
+    <HStack
+      spacing={4}
+      w="100%"
+      h="100%"
+      align="center"
+      justify="space-evenly"
+    >
       {TASKS.map((task, idx) => {
         const unlocked = Number(energy) >= task.threshold;
-        const borderColor = segmentColors[idx];
+        const borderColor = segmentColors[idx % segmentColors.length];
 
         return (
           <Box
             key={task.id}
+            flex="1"
             display="flex"
             alignItems="center"
             justifyContent="center"
+            minW="0"
+            h="100%"
           >
             <AnimatePresence mode="wait">
               <motion.img
-                key={unlocked ? "unlocked" : "locked"}
+                key={`${task.id}-${unlocked ? "unlocked" : "locked"}`}
                 src={unlocked ? task.unlockedImg : task.lockedImg}
                 alt={unlocked ? "Unlocked" : "Locked"}
                 style={{
-                  width: "70%",
-                  height: "70%",
+                  width: "92%",
+                  maxWidth: "210px",
+                  maxHeight: "2900px",
                   objectFit: "contain",
-                  border: `18px solid ${borderColor}`,
-                  borderRadius: "1.5rem",
-                  boxShadow: "0 6px 30px 0 rgba(30,30,30,0.10)",
+                  border: `10px solid ${borderColor}`,
+                  borderRadius: "1.25rem",
+                  boxShadow: "0 6px 24px 0 rgba(30,30,30,0.10)",
                   transition: "border-color 0.2s",
                   background: "#cae8eb",
                 }}
@@ -84,7 +75,7 @@ function AITaskImageGrid({ energy }) {
           </Box>
         );
       })}
-    </SimpleGrid>
+    </HStack>
   );
 }
 

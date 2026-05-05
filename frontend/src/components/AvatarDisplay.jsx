@@ -1,59 +1,31 @@
 // src/components/AvatarDisplay.jsx
-
-import React, { useEffect, useState } from "react";
-import Lottie from "lottie-react";
+import React from "react";
 import { Box } from "@chakra-ui/react";
 import AvatarMessageBox from "./AvatarMessageBox";
 
 const AvatarDisplay = ({ message }) => {
-  const [animationData, setAnimationData] = useState(null);
-
-  useEffect(() => {
-    fetch("/animations/friendly-robot.json")
-      .then((res) => res.json())
-      .then((data) => setAnimationData(data));
-  }, []);
-
   return (
     <Box
-      bg="transparent"
-      p={0}
-      borderRadius="none"
-      boxShadow="none"
-      minHeight="720px"
-      maxHeight="720px"
+      w="100%"
+      h="100%"
       display="flex"
       flexDirection="column"
       alignItems="center"
-      justifyContent="flex-end"
-      position="relative"
-      overflow="visible"
+      justifyContent="flex-start"
+      overflow="hidden"
     >
-      {/* Unified Message Box ABOVE the avatar */}
       <Box
-        position="absolute"
-        top="0"
-        width="100%"
-        px={2}
-        pt={2}
+        w="100%"
         display="flex"
         justifyContent="center"
-        zIndex={10}
+        alignItems="flex-start"
+        pt={2}
       >
-        <AvatarMessageBox text={message?.text} kind={message?.kind || "default"} />
+        <AvatarMessageBox
+          text={message?.text}
+          kind={message?.kind || "default"}
+        />
       </Box>
-
-      {/* Avatar */}
-      {animationData && (
-        <Box width="100%" maxWidth="520px">
-          <Lottie
-            animationData={animationData}
-            loop
-            autoplay
-            style={{ width: "100%", height: "100%", background: "transparent" }}
-          />
-        </Box>
-      )}
     </Box>
   );
 };

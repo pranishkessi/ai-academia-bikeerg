@@ -1,0 +1,56 @@
+[
+  {
+    "id": "level1",
+    "shortLabel": "Geschafft, du hast den Computer angeschaltet.\nWeiter geht’s!",
+    "label": "Geschafft, du hast den Computer angeschaltet.\nWeiter geht’s!",
+    "threshold": 0.0017,
+    "lockedImg": "/MYSTERY_1.1.png",
+    "unlockedImg": "/Unlocked_1.png",
+    "warningOnly": false
+  },
+  {
+    "id": "level2",
+    "shortLabel": "Du hast Energie für 10 Suchanfragen erzeugt. Über Google, DuckDuckGo, Ecosia, Bing oder ähnliche Suchmaschinen.\nAuf zum nächsten Level!",
+    "label": "Du hast Energie für 10 Suchanfragen erzeugt. Über Google, DuckDuckGo, Ecosia, Bing oder ähnliche Suchmaschinen.\nAuf zum nächsten Level!",
+    "threshold": 0.003,
+    "lockedImg": "/MYSTERY_2.2.png",
+    "unlockedImg": "/Unlocked_2.png",
+    "warningOnly": false
+  },
+  {
+    "id": "level3",
+    "shortLabel": "Es wurden 1000 Zeichen mit KI übersetzt.\nSuper, weiter geht’s!",
+    "label": "Es wurden 1000 Zeichen mit KI übersetzt.\nSuper, weiter geht’s!",
+    "threshold": 0.0045,
+    "lockedImg": "/MYSTERY_3.3.png",
+    "unlockedImg": "/Unlocked_3.png",
+    "warningOnly": false
+  },
+  {
+    "id": "level4",
+    "shortLabel": "Du hast zwei Fragen mit ChatGPT beantwortet. Puh, ganz schön anstrengend.\nAber da geht noch mehr!",
+    "label": "Du hast zwei Fragen mit ChatGPT beantwortet. Puh, ganz schön anstrengend.\nAber da geht noch mehr!",
+    "threshold": 0.006,
+    "lockedImg": "/MYSTERY_4.4.png",
+    "unlockedImg": "/Unlocked_4.png",
+    "warningOnly": false
+  },
+  {
+    "id": "level5",
+    "shortLabel": "Du hast ein Bild mit KI erstellt.\nWas für eine Treterei!\nWillst du wirklich noch mehr?",
+    "label": "Du hast ein Bild mit KI erstellt.\nWas für eine Treterei!\nWillst du wirklich noch mehr?",
+    "threshold": 0.01,
+    "lockedImg": "/MYSTERY_5.5.png",
+    "unlockedImg": "/Unlocked_5.png",
+    "warningOnly": false
+  },
+  {
+    "id": "level6",
+    "shortLabel": "Du machst weiter? Respekt!\nNur noch 1 Stunde treten, und ein 5 Sekunden Video ist mit KI erstellt.\nABER\ngib mal anderen eine Chance (:",
+    "label": "Du machst weiter? Respekt!\nNur noch 1 Stunde treten, und ein 5 Sekunden Video ist mit KI erstellt.\nABER\ngib mal anderen eine Chance (:",
+    "threshold": 0.5,
+    "lockedImg": "/MYSTERY_6.6.png",
+    "unlockedImg": "/Unlocked_6.png",
+    "warningOnly": false
+  }
+]

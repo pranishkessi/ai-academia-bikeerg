@@ -1,23 +1,37 @@
 // src/hooks/useAvatarMessages.js
 import { useState, useEffect, useRef } from "react";
-import { UNLOCKS, ENERGY_BANDS, BAND_MESSAGES, countUnlocked } from "../constants/unlocks";
+import {
+  UNLOCKS,
+  ENERGY_BANDS,
+  BAND_MESSAGES,
+  getShuffledBandMessages,
+} from "../constants/unlocks";
 
-export function useAvatarMessages({ energy, elapsedTime, sessionActive, unlockedTasks }) {
+const WELCOME_MSG =
+  "Willkommen!\nDrück den grünen Startknopf und los gehts. Tritt in die Pedale und lass dich überraschen.";
+
+const SESSION_END_DISPLAY_MS = 30000;
+
+// Controls how often "Wussten Sie?" messages can appear.
+// At 160 W, 0.0007 kWh takes roughly 16 seconds, so this avoids message spam.
+const MIN_SECONDS_BETWEEN_MSGS = 14;
+const MIN_DELTA_ENERGY = 0.0007;
+
+export function useAvatarMessages({
+  energy = 0,
+  elapsedTime = 0,
+  sessionActive = false,
+  unlockedTasks = [],
+}) {
   const [message, setMessage] = useState({
-    text: "WILLKOMMEN! Wenn Sie bereit sind, in die Pedale zu treten, drücken Sie zum Starten die grüne Taste (START).",
+    text: WELCOME_MSG,
     kind: "info",
   });
 
-  // --- existing refs you already had ---
   const prevEnergyRef = useRef(0);
   const prevSessionActiveRef = useRef(sessionActive);
   const lastSessionEnergyRef = useRef(0);
 
-  // --- additions for auto-revert to Welcome after session end ---
-  const WELCOME_MSG =
-    "WILLKOMMEN! Wenn Sie bereit sind, in die " +
-    "Pedale zu treten, drücken Sie zum Starten die grüne Taste (START).";
-  const SESSION_END_DISPLAY_MS = 10000; // 10s in message box
   const revertTimerRef = useRef(null);
   const clearRevertTimer = () => {
     if (revertTimerRef.current) {
@@ -25,32 +39,50 @@ export function useAvatarMessages({ energy, elapsedTime, sessionActive, unlocked
       revertTimerRef.current = null;
     }
   };
-  const showWelcomeMessage = () => {
-    clearRevertTimer();
-    setMessage({ text: WELCOME_MSG, kind: "info" });
+
+  const lastMotivEnergyRef = useRef(0);
+  const lastMotivAtSecRef = useRef(0);
+  const bandIndexRef = useRef(0);
+  const bandCursorRef = useRef({});
+
+  const shuffledBandMessagesRef = useRef(getShuffledBandMessages());
+
+  // Use active tasks from DashboardLayout if available, otherwise fall back.
+  // DashboardLayout should pass task.label as label so unlock messages show the full reference text.
+  const activeTasks =
+    Array.isArray(unlockedTasks) && unlockedTasks.length > 0 ? unlockedTasks : UNLOCKS;
+
+  const countUnlockedFromTasks = (value) =>
+    activeTasks.filter((task) => Number(value) >= Number(task.threshold)).length;
+
+  const resetBandCursors = () => {
+    const cursors = {};
+    Object.keys(BAND_MESSAGES).forEach((bandKey) => {
+      cursors[bandKey] = 0;
+    });
+    bandCursorRef.current = cursors;
   };
 
-  // NEW refs for energy-based motivation
-  const lastMotivEnergyRef = useRef(0);     // last energy when we showed a motiv msg
-  const lastMotivAtSecRef   = useRef(0);    // last elapsedTime (sec) we showed one
-  const bandIndexRef        = useRef(0);    // current band index
-  const bandCursorRef       = useRef({ 0:0,1:0,2:0,3:0,4:0 }); // round-robin per band
-
-  const MIN_SECONDS_BETWEEN_MSGS = 10;      // rate-limit (tune as needed)
-  const MIN_DELTA_ENERGY = 0.0005;          // only show next msg after +0.0005 kWh gained (tune)
-
-  // -------- SESSION START/STOP (keep your working version) --------
+  // -------- SESSION START/STOP --------
   useEffect(() => {
     const wasActive = prevSessionActiveRef.current;
 
     if (!wasActive && sessionActive) {
       clearRevertTimer();
-      setMessage({ text: "Los geht’s! Du erzeugst jetzt Energie.", kind: "success" });
-      // reset motiv throttles for the new session
+
+      setMessage({
+        text: "Los geht’s! Du erzeugst jetzt Energie.",
+        kind: "success",
+      });
+
+      // Reset motivation state for a new session
       lastMotivEnergyRef.current = 0;
       lastMotivAtSecRef.current = 0;
       bandIndexRef.current = 0;
-      bandCursorRef.current = { 0:0,1:0,2:0,3:0,4:0 };
+      resetBandCursors();
+
+      // Shuffle messages once per new session
+      shuffledBandMessagesRef.current = getShuffledBandMessages();
     }
 
     if (sessionActive) {
@@ -59,15 +91,16 @@ export function useAvatarMessages({ energy, elapsedTime, sessionActive, unlocked
 
     if (wasActive && !sessionActive) {
       const finalEnergy = lastSessionEnergyRef.current ?? energy ?? 0;
-      const unlockedCount = countUnlocked(finalEnergy);
-      const totalTasks = UNLOCKS.length;
+      const unlockedCount = countUnlockedFromTasks(finalEnergy);
+      const totalTasks = activeTasks.length;
 
       setMessage({
-        text: `Session beendet. Energie: ${Number(finalEnergy).toFixed(4)} kWh • Aufgaben: ${unlockedCount} / ${totalTasks}`,
+        text: `Session beendet. Energie: ${Number(finalEnergy)
+          .toFixed(4)
+          .replace(".", ",")} kWh • Aufgaben: ${unlockedCount} / ${totalTasks}`,
         kind: "info",
       });
 
-      // Auto-revert to welcome after 10s
       clearRevertTimer();
       revertTimerRef.current = setTimeout(() => {
         setMessage({ text: WELCOME_MSG, kind: "info" });
@@ -76,52 +109,65 @@ export function useAvatarMessages({ energy, elapsedTime, sessionActive, unlocked
     }
 
     prevSessionActiveRef.current = sessionActive;
-  }, [sessionActive, energy]);
+  }, [sessionActive, energy, activeTasks]);
 
-  // -------- TASK UNLOCKS (keep your working version) --------
+  // -------- TASK UNLOCKS --------
   useEffect(() => {
     const prevEnergy = prevEnergyRef.current;
+
     if (energy > prevEnergy) {
-      const newlyUnlocked = (unlockedTasks || UNLOCKS).find(
+      const newlyUnlocked = activeTasks.find(
         (task) => energy >= task.threshold && prevEnergy < task.threshold
       );
+
       if (newlyUnlocked) {
-        setMessage({ text: `Freigeschaltet: ${newlyUnlocked.label} 🔓`, kind: "unlock" });
-        // On unlock we DO NOT also push a motivation message at the same moment
+        setMessage({
+          text: newlyUnlocked.label,
+          kind: "unlock",
+        });
+
+        // Avoid immediate "Wussten Sie?" message right after an unlock.
         lastMotivEnergyRef.current = energy;
         lastMotivAtSecRef.current = elapsedTime || 0;
       }
     }
+
     prevEnergyRef.current = energy;
-  }, [energy, unlockedTasks, elapsedTime]);
+  }, [energy, activeTasks, elapsedTime]);
 
   // -------- ENERGY-BASED MOTIVATION / DID-YOU-KNOW --------
   useEffect(() => {
     if (!sessionActive) return;
 
-    // Compute current band
-    const bandIdx = ENERGY_BANDS.findIndex(b => energy >= b.min && energy < b.max);
-    bandIndexRef.current = bandIdx === -1 ? ENERGY_BANDS.length - 1 : bandIdx;
+    const bandIdx = ENERGY_BANDS.findIndex((b) => energy >= b.min && energy < b.max);
+    const safeBandIdx = bandIdx === -1 ? ENERGY_BANDS.length - 1 : bandIdx;
+    bandIndexRef.current = safeBandIdx;
 
     // Throttle by time
     const sinceSec = (elapsedTime || 0) - (lastMotivAtSecRef.current || 0);
     if (sinceSec < MIN_SECONDS_BETWEEN_MSGS) return;
 
-    // Throttle by energy delta
+    // Throttle by energy increase
     const dE = energy - (lastMotivEnergyRef.current || 0);
     if (dE < MIN_DELTA_ENERGY) return;
 
-    // Pick next message from this band (round-robin)
-    const pool = BAND_MESSAGES[bandIndexRef.current] || [];
+    const pool =
+      shuffledBandMessagesRef.current[safeBandIdx] ||
+      BAND_MESSAGES[safeBandIdx] ||
+      [];
+
     if (pool.length === 0) return;
 
-    const nextIdx = bandCursorRef.current[bandIndexRef.current] % pool.length;
+    const currentCursor = bandCursorRef.current[safeBandIdx] || 0;
+    const nextIdx = currentCursor % pool.length;
     const nextText = pool[nextIdx];
 
-    setMessage({ text: nextText, kind: "info" });
+    setMessage({
+      text: nextText,
+      kind: "info",
+    });
 
-    // advance pointers
-    bandCursorRef.current[bandIndexRef.current] = nextIdx + 1;
+    bandCursorRef.current[safeBandIdx] = nextIdx + 1;
     lastMotivEnergyRef.current = energy;
     lastMotivAtSecRef.current = elapsedTime || 0;
   }, [energy, elapsedTime, sessionActive]);
