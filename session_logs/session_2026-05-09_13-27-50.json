@@ -1,0 +1,50 @@
+{
+  "elapsed_time": 210,
+  "distance_meters": 1702,
+  "energy_kwh": 0.011923203880363492,
+  "energy_kwh_display": 0.0119,
+  "tasks_unlocked": [
+    "Computer eingeschaltet",
+    "10 Google-Suchanfragen",
+    "1.000 Zeichen übersetzt",
+    "2 ChatGPT-Fragen",
+    "Bild mit KI erstellt"
+  ],
+  "tasks_unlocked_details": [
+    {
+      "id": "level1",
+      "shortLabel": "Computer eingeschaltet",
+      "label": "Du hast den Computer eingeschaltet",
+      "threshold": 0.0017
+    },
+    {
+      "id": "level2",
+      "shortLabel": "10 Google-Suchanfragen",
+      "label": "Du hast 10 Suchanfragen bei Google geschafft",
+      "threshold": 0.003
+    },
+    {
+      "id": "level3",
+      "shortLabel": "1.000 Zeichen übersetzt",
+      "label": "Du hast 1.000 Zeichen Text mit KI übersetzt",
+      "threshold": 0.0045
+    },
+    {
+      "id": "level4",
+      "shortLabel": "2 ChatGPT-Fragen",
+      "label": "Du hast 2 Fragen an ChatGPT geschafft",
+      "threshold": 0.006
+    },
+    {
+      "id": "level5",
+      "shortLabel": "Bild mit KI erstellt",
+      "label": "Du hast ein Bild mit KI erstellt",
+      "threshold": 0.01
+    }
+  ],
+  "unlocked_count": 5,
+  "current_level": 5,
+  "total_tasks": 6,
+  "sim_mode": false,
+  "stopped_at": "2026-05-09T13:27:50.047854"
+}

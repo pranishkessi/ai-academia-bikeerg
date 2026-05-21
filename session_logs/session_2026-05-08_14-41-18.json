@@ -1,0 +1,22 @@
+{
+  "elapsed_time": 40,
+  "distance_meters": 189,
+  "energy_kwh": 0.0022922020656586115,
+  "energy_kwh_display": 0.0023,
+  "tasks_unlocked": [
+    "Computer eingeschaltet"
+  ],
+  "tasks_unlocked_details": [
+    {
+      "id": "level1",
+      "shortLabel": "Computer eingeschaltet",
+      "label": "Du hast den Computer eingeschaltet",
+      "threshold": 0.0017
+    }
+  ],
+  "unlocked_count": 1,
+  "current_level": 1,
+  "total_tasks": 6,
+  "sim_mode": false,
+  "stopped_at": "2026-05-08T14:41:18.105520"
+}

@@ -1,0 +1,29 @@
+{
+  "elapsed_time": 169,
+  "distance_meters": 536,
+  "energy_kwh": 0.003469049532743581,
+  "energy_kwh_display": 0.0035,
+  "tasks_unlocked": [
+    "Computer eingeschaltet",
+    "10 Google-Suchanfragen"
+  ],
+  "tasks_unlocked_details": [
+    {
+      "id": "level1",
+      "shortLabel": "Computer eingeschaltet",
+      "label": "Du hast den Computer eingeschaltet",
+      "threshold": 0.0017
+    },
+    {
+      "id": "level2",
+      "shortLabel": "10 Google-Suchanfragen",
+      "label": "Du hast 10 Suchanfragen bei Google geschafft",
+      "threshold": 0.003
+    }
+  ],
+  "unlocked_count": 2,
+  "current_level": 2,
+  "total_tasks": 6,
+  "sim_mode": false,
+  "stopped_at": "2026-05-06T18:30:45.307738"
+}

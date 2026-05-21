@@ -4,15 +4,17 @@ Changing power off succeeded
 [[0;93mCHG[0m] Controller 9C:B1:50:77:4E:9D Class: 0x00000000
 [[0;93mCHG[0m] Controller 9C:B1:50:77:4E:9D Class: 0x006c0104
 Changing power on succeeded
-INFO:     Started server process [3270]
+INFO:     Started server process [4169]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
+🚴 Starting backend in real BLE mode
 ⏳ Initial boot delay 20s before starting BLE scan...
-INFO:     127.0.0.1:47996 - "GET /data HTTP/1.1" 200 OK
-INFO:     127.0.0.1:47996 - "GET /data HTTP/1.1" 200 OK
-INFO:     127.0.0.1:47996 - "GET /data HTTP/1.1" 200 OK
-INFO:     127.0.0.1:47996 - "GET /data HTTP/1.1" 200 OK
-INFO:     127.0.0.1:47996 - "GET /data HTTP/1.1" 200 OK
-INFO:     127.0.0.1:47996 - "GET /data HTTP/1.1" 200 OK
-INFO:     127.0.0.1:47996 - "GET /data HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42392 - "GET /data HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42392 - "GET /data HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42392 - "GET /data HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42392 - "GET /data HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42392 - "GET /data HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59546 - "GET /data HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59546 - "GET /data HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59546 - "GET /data HTTP/1.1" 200 OK

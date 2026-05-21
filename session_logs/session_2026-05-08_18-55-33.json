@@ -1,0 +1,13 @@
+{
+  "elapsed_time": 0,
+  "distance_meters": 0,
+  "energy_kwh": 0.0,
+  "energy_kwh_display": 0.0,
+  "tasks_unlocked": [],
+  "tasks_unlocked_details": [],
+  "unlocked_count": 0,
+  "current_level": 0,
+  "total_tasks": 6,
+  "sim_mode": false,
+  "stopped_at": "2026-05-08T18:55:33.649034"
+}
