@@ -6,7 +6,7 @@ import logging
 import os
 from bleak import BleakScanner
 
-SHELLY_IP = "172.19.7.51"
+SHELLY_IP = "192.168.0.188"
 RELAY_ID = 1
 POWER_OFF_SECONDS = 30
 

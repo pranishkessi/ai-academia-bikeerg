@@ -268,3 +268,69 @@
 2026-05-21 13:44:51,596 - INFO - Shelly relay turned OFF
 2026-05-21 13:45:19,218 - INFO - Shelly relay turned ON
 2026-05-21 13:45:21,647 - INFO - Shelly relay turned ON
+2026-05-21 14:07:11,242 - INFO - Bluetooth is available
+2026-05-21 14:07:11,393 - INFO - Bluetooth is available
+2026-05-21 14:07:16,286 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by ConnectTimeoutError(<HTTPConnection(host='172.19.7.51', port=80) at 0x757a1a7faa10>, 'Connection to 172.19.7.51 timed out. (connect timeout=5)'))
+2026-05-21 14:07:16,437 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by ConnectTimeoutError(<HTTPConnection(host='172.19.7.51', port=80) at 0x74ebb009e980>, 'Connection to 172.19.7.51 timed out. (connect timeout=5)'))
+2026-05-21 14:11:40,505 - INFO - Bluetooth is available
+2026-05-21 14:11:40,685 - INFO - Bluetooth is available
+2026-05-21 14:11:45,569 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by ConnectTimeoutError(<HTTPConnection(host='172.19.7.51', port=80) at 0x711eb377aa10>, 'Connection to 172.19.7.51 timed out. (connect timeout=5)'))
+2026-05-21 14:11:45,710 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by ConnectTimeoutError(<HTTPConnection(host='172.19.7.51', port=80) at 0x708d3f6269b0>, 'Connection to 172.19.7.51 timed out. (connect timeout=5)'))
+2026-05-21 14:18:35,230 - INFO - Bluetooth is available
+2026-05-21 14:18:40,260 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by ConnectTimeoutError(<HTTPConnection(host='172.19.7.51', port=80) at 0x79e45f132920>, 'Connection to 172.19.7.51 timed out. (connect timeout=5)'))
+2026-05-21 14:30:22,530 - INFO - Bluetooth is available
+2026-05-21 14:30:22,679 - INFO - Bluetooth is available
+2026-05-21 14:30:27,562 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by ConnectTimeoutError(<HTTPConnection(host='172.19.7.51', port=80) at 0x7f9ce613ea10>, 'Connection to 172.19.7.51 timed out. (connect timeout=5)'))
+2026-05-21 14:30:27,697 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by ConnectTimeoutError(<HTTPConnection(host='172.19.7.51', port=80) at 0x7375652a29b0>, 'Connection to 172.19.7.51 timed out. (connect timeout=5)'))
+2026-05-21 14:36:20,283 - INFO - Bluetooth is available
+2026-05-21 14:36:20,919 - INFO - Bluetooth is available
+2026-05-21 14:36:25,309 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by ConnectTimeoutError(<HTTPConnection(host='172.19.7.51', port=80) at 0x74d9175aa980>, 'Connection to 172.19.7.51 timed out. (connect timeout=5)'))
+2026-05-21 14:36:25,936 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by ConnectTimeoutError(<HTTPConnection(host='172.19.7.51', port=80) at 0x7b3fd9ff2950>, 'Connection to 172.19.7.51 timed out. (connect timeout=5)'))
+2026-05-21 14:40:26,206 - WARNING - Bluetooth not available yet: No powered Bluetooth adapters found.
+2026-05-21 14:40:30,239 - INFO - Bluetooth is available
+2026-05-21 14:40:31,406 - INFO - Bluetooth is available
+2026-05-21 14:40:31,675 - INFO - Bluetooth is available
+2026-05-21 14:40:35,251 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by ConnectTimeoutError(<HTTPConnection(host='172.19.7.51', port=80) at 0x7c793f106950>, 'Connection to 172.19.7.51 timed out. (connect timeout=5)'))
+2026-05-21 14:40:36,420 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by ConnectTimeoutError(<HTTPConnection(host='172.19.7.51', port=80) at 0x74f20dda69b0>, 'Connection to 172.19.7.51 timed out. (connect timeout=5)'))
+2026-05-21 14:40:36,691 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by ConnectTimeoutError(<HTTPConnection(host='172.19.7.51', port=80) at 0x7e0c03c268c0>, 'Connection to 172.19.7.51 timed out. (connect timeout=5)'))
+2026-05-22 08:46:24,100 - INFO - Bluetooth is available
+2026-05-22 08:46:24,111 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by NewConnectionError("HTTPConnection(host='172.19.7.51', port=80): Failed to establish a new connection: [Errno 101] Network is unreachable"))
+2026-05-22 08:49:47,406 - INFO - Bluetooth is available
+2026-05-22 08:49:47,427 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by NewConnectionError("HTTPConnection(host='172.19.7.51', port=80): Failed to establish a new connection: [Errno 101] Network is unreachable"))
+2026-05-22 08:49:49,556 - INFO - Bluetooth is available
+2026-05-22 08:49:49,583 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by NewConnectionError("HTTPConnection(host='172.19.7.51', port=80): Failed to establish a new connection: [Errno 101] Network is unreachable"))
+2026-05-22 12:50:36,440 - WARNING - Bluetooth not available yet: No powered Bluetooth adapters found.
+2026-05-22 12:50:36,555 - WARNING - Bluetooth not available yet: No powered Bluetooth adapters found.
+2026-05-22 12:50:40,464 - INFO - Bluetooth is available
+2026-05-22 12:50:40,572 - INFO - Bluetooth is available
+2026-05-22 12:50:40,823 - INFO - Bluetooth is available
+2026-05-22 12:50:43,571 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by NewConnectionError("HTTPConnection(host='172.19.7.51', port=80): Failed to establish a new connection: [Errno 113] No route to host"))
+2026-05-22 12:50:43,571 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by NewConnectionError("HTTPConnection(host='172.19.7.51', port=80): Failed to establish a new connection: [Errno 113] No route to host"))
+2026-05-22 12:50:43,575 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by NewConnectionError("HTTPConnection(host='172.19.7.51', port=80): Failed to establish a new connection: [Errno 113] No route to host"))
+2026-05-22 13:06:42,358 - INFO - Bluetooth is available
+2026-05-22 13:06:42,498 - INFO - Bluetooth is available
+2026-05-22 13:06:45,446 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by NewConnectionError("HTTPConnection(host='172.19.7.51', port=80): Failed to establish a new connection: [Errno 113] No route to host"))
+2026-05-22 13:06:45,448 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by NewConnectionError("HTTPConnection(host='172.19.7.51', port=80): Failed to establish a new connection: [Errno 113] No route to host"))
+2026-05-22 13:32:23,342 - INFO - Bluetooth is available
+2026-05-22 13:32:24,867 - WARNING - Bluetooth not available yet: [org.bluez.Error.Failed] No discovery started
+2026-05-22 13:32:26,457 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by NewConnectionError("HTTPConnection(host='172.19.7.51', port=80): Failed to establish a new connection: [Errno 113] No route to host"))
+2026-05-22 13:32:28,905 - INFO - Bluetooth is available
+2026-05-22 13:32:32,026 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by NewConnectionError("HTTPConnection(host='172.19.7.51', port=80): Failed to establish a new connection: [Errno 113] No route to host"))
+2026-05-22 14:08:23,956 - INFO - Bluetooth is available
+2026-05-22 14:08:27,806 - INFO - Bluetooth is available
+2026-05-22 14:08:28,998 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by ConnectTimeoutError(<HTTPConnection(host='172.19.7.51', port=80) at 0x763b69492980>, 'Connection to 172.19.7.51 timed out. (connect timeout=5)'))
+2026-05-22 14:08:32,828 - ERROR - Shelly request failed: HTTPConnectionPool(host='172.19.7.51', port=80): Max retries exceeded with url: /rpc/Switch.GetStatus?id=1 (Caused by ConnectTimeoutError(<HTTPConnection(host='172.19.7.51', port=80) at 0x704f63fa6980>, 'Connection to 172.19.7.51 timed out. (connect timeout=5)'))
+2026-05-22 14:38:29,564 - INFO - Bluetooth is available
+2026-05-22 14:38:29,588 - INFO - Current Shelly relay state: True
+2026-05-22 14:38:29,610 - INFO - Shelly relay turned OFF
+2026-05-22 14:38:59,662 - INFO - Shelly relay turned ON
+2026-05-22 14:41:55,467 - WARNING - Bluetooth not available yet: No powered Bluetooth adapters found.
+2026-05-22 14:41:59,510 - INFO - Bluetooth is available
+2026-05-22 14:41:59,536 - INFO - Current Shelly relay state: True
+2026-05-22 14:41:59,558 - INFO - Shelly relay turned OFF
+2026-05-22 14:42:29,609 - INFO - Shelly relay turned ON
+2026-05-22 14:46:21,374 - WARNING - Bluetooth not available yet: No powered Bluetooth adapters found.
+2026-05-22 14:46:25,426 - INFO - Bluetooth is available
+2026-05-22 14:46:25,450 - INFO - Current Shelly relay state: True
+2026-05-22 14:46:25,472 - INFO - Shelly relay turned OFF
+2026-05-22 14:46:55,521 - INFO - Shelly relay turned ON
